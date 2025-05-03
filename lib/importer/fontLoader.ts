@@ -1,6 +1,5 @@
 const FontLoader = class {
-
-    static async fontLoad(url, name) {
+    static async fontLoad(url:string, name:string) {
         if(url) {
             const font = new FontFace(name, `url(${url})`);
             const _font = await font.load();

@@ -1,7 +1,7 @@
 const Cast = require('../util/cast');
 
 import { S3Runtime } from 'lib/engine/s3Runtime';
-import type {S3Keyboard, S3DomEventData} from './s3Keyboard';
+import type {S3Keyboard, S3DomEventData} from '../../libTypes/io/s3Keyboard';
 
 /**
  * Names used internally for keys used in scratch, also known as "scratch keys".

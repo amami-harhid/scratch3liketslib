@@ -10,16 +10,22 @@ const SoundLoader = require('./importer/soundLoader');
 const Stage = require('./stage');
 const threads = require('./threads');
 const Utils = require('./utils');
-
-const PlayGround = class {
-
-    static getInstance() {
+import { S3Render } from "libTypes/S3Render";
+const PlayGround = class PlayGround {
+    static _instance:PlayGround;
+    /**
+     * 
+     * @return {PlayGround}
+     */
+    static getInstance():PlayGround {
         if( PlayGround._instance == undefined ) {
             PlayGround._instance = new PlayGround();
         }
         return PlayGround._instance;
     }
-
+    private _render: S3Render|null;
+    private _id:string;
+    private _preloadImagePromise: Promise<any>[];
     constructor () {
         this._render = null;
         this._id = this._generateUUID();
@@ -325,5 +331,5 @@ const PlayGround = class {
         }
     }
 }
-
-export default PlayGround.getInstance();
+const playGround = PlayGround.getInstance();
+export {playGround};

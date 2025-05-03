@@ -1,5 +1,5 @@
 {
-  "include": ["./lib/**/*.ts"],
+  "include": ["./lib/**/*.ts", "libTypes/io/s3Keyboard.d.ts", "libTypes/S3Entity.d.ts", "libTypes/engine/S3Renderer.d.ts", "libTypes/engine/s3Runtime.d.ts"],
   "exclude": ["./node_modules/*"],
   "compilerOptions": {
     "target": "es2020",         /* es2018,es2019,es2020,esnext が適している */

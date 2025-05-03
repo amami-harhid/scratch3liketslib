@@ -19,11 +19,19 @@ const ImageLoader = class {
         }
         return false;
     }
-    static async loadImage(image, name, translate={x:0,y:0}) {
+    /**
+     * 
+     * @param {string} image 
+     * @param {string} name 
+     * @param {{x:number,y:number}} translate 
+     * @return {Promise<{name:string,data: any}>} 
+     */
+    static async loadImage(image:string, name:string, 
+        translate: { x: number; y: number; }={x:0,y:0}): Promise<{name:string,data: any}> {
         if(image) {
             if(typeof image === 'string') {
                 if(image.match(ImageLoader.REGEX_SVG_DATA_IMAGE_FILE)){
-                    let _text = await ImageLoader._svgText(image);
+                    let _text:string = await ImageLoader._svgText(image);
                     if(_text == "ERROR"){
                         throw "ローディングエラー。SVG画像データの指定を確認してください。("+image+")";
                     }
@@ -46,6 +54,7 @@ const ImageLoader = class {
                 }
             }
         }
+        throw "イメージローディングエラー。画像データの指定を確認してください。";
     }
     static async _loadImage(src) {
         return new Promise((resolve, reject) => {

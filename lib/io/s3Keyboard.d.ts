@@ -4,5 +4,5 @@ export type S3DomEventData = {
 }
 export type S3Keyboard = {
 
-    
+    keyIsDown(key: string): boolean;
 }

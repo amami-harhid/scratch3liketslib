@@ -13,48 +13,71 @@ const MouseWheel = require('../io/mouseWheel');
  */
 const Runtime = class extends EventEmitter implements S3Runtime{
 
-    private ioDevices:S3IODevice; 
+    private ioDevices:S3IODevice;
+    private renderer: S3Renderer|null;
     /**
      * @constructor
      */
     constructor() {
         super();
-        this._target = [];
+        //this._target = [];
         /** @type S3Renderer */
         this.renderer = null;
         const ioDevice:S3IODevice = {
-            //clock: new Clock(this),
             keyboard: new Keyboard(this),
-            mouse: new Mouse(this),
-            mouseWheel: new MouseWheel(this),
-            //userData: new UserData(),
-            //video: new Video(this)
         }
         this.ioDevices = ioDevice;
     }
     [EventEmitter.captureRejectionSymbol]?<K>(error: Error, event: string | symbol, ...args: any[]): void {
-        throw new Error('Method not implemented.');
+        // do nothing;
     }
     [EventEmitter.captureRejectionSymbol]?<K>(error: Error, event: string | symbol, ...args: any[]): void {
-        throw new Error('Method not implemented.');
+        // do nothing;
     }
-    addListener<K>(eventName: string | symbol, listener: (...args: any[]) => void): this {
-        throw new Error('Method not implemented.');
+    addListener<K>(eventName: string, listener: (...args: any[]) => void): void {
+        // do nothing;
     }
-    on<K>(eventName: string | symbol, listener: (...args: any[]) => void): this {
-        throw new Error('Method not implemented.');
+    /**
+     * 
+     * @param eventName 
+     * @param listener 
+     * @abstract
+     */
+    on(eventName: string, listener: (...args: any[]) => void) {
+
     }
-    once<K>(eventName: string | symbol, listener: (...args: any[]) => void): this {
-        throw new Error('Method not implemented.');
+    /**
+     * 
+     * @param eventName 
+     * @param listener 
+     * @abstract
+     */
+    once<K>(eventName: string, listener: (...args: any[]) => void) {
+
     }
-    removeListener<K>(eventName: string | symbol, listener: (...args: any[]) => void): this {
-        throw new Error('Method not implemented.');
+    /**
+     * 
+     * @param eventName 
+     * @param listener 
+     * @abstract
+     */
+    removeListener<K>(eventName: string, listener: (...args: any[]) => void){
+
     }
-    off<K>(eventName: string | symbol, listener: (...args: any[]) => void): this {
-        throw new Error('Method not implemented.');
+    /**
+     * 
+     * @param eventName 
+     * @param listener 
+     * @abstract
+     */
+    off<K>(eventName: string | symbol, listener: (...args: any[]) => void) {
     }
-    removeAllListeners(eventName?: string | symbol | undefined): this {
-        throw new Error('Method not implemented.');
+    /**
+     * 
+     * @param eventName
+     * @abstract 
+     */
+    removeAllListeners(eventName: string) {
     }
     setMaxListeners(n: number): this {
         throw new Error('Method not implemented.');

@@ -6,11 +6,16 @@ export interface S3IODevice {
     keyboard : S3Keyboard;
 };
 
+declare interface S3Emitter {
+    on(emitId:string, func:CallableFunction): void;
+    emit(emitId:string):void;
+}
+
 /**
  * runtime
  */
-export interface S3Runtime extends EventEmitter{
-    new(): S3Runtime;
+export interface S3Runtime extends S3Emitter{
+    //new(): S3Runtime;
     GREEN_BUTTON_ENABLED: string;
     attachRenderer(renderer:S3Renderer);
     /**
@@ -19,7 +24,5 @@ export interface S3Runtime extends EventEmitter{
      * @return {boolean} isDown - 押されているとき TRUE
      */
     keyIsDown(key:string):boolean;
-
-    ioDevices : S3IODevice;
 
 }

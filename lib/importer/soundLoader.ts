@@ -1,4 +1,4 @@
-const SoundLoader = class {
+export class SoundLoader {
 
     /**
      * 
@@ -21,5 +21,3 @@ const SoundLoader = class {
     }
 
 };
-
-module.exports = SoundLoader;

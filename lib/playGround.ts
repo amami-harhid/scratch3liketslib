@@ -1,17 +1,19 @@
-const Element = require('./element');
-const Env = require('./env');
-const FontLoader = require('./importer/fontLoader');
-const ImageLoader = require('./importer/imageLoader');
-const NowLoading = require('./nowLoading');
-const Libs = require('./libs');
-const Render = require('./render');
-const Runtime = require('./engine/runtime');
-const SoundLoader = require('./importer/soundLoader');
-const Stage = require('./stage');
-const threads = require('./threads');
-const Utils = require('./utils');
-import { S3Render } from "libTypes/S3Render";
-const PlayGround = class PlayGround {
+import { Element } from './element';
+import { Entity } from './entity';
+import { Env } from './env';
+import { FontLoader } from './importer/fontLoader';
+import { ImageLoader } from './importer/imageLoader';
+import { NowLoadingSVG } from './nowLoading';
+import { libs } from './libs';
+import { Monitors } from './monitor/monitors';
+import { Render } from "./render";
+import { Runtime } from './engine/runtime';
+import { SoundLoader } from './importer/soundLoader';
+import { Sprite } from './sprite';
+import { Stage } from './stage';
+import { threads } from './threads';
+import { Utils } from './utils';
+export class PlayGround {
     static _instance:PlayGround;
     /**
      * 
@@ -23,22 +25,50 @@ const PlayGround = class PlayGround {
         }
         return PlayGround._instance;
     }
-    private _render: S3Render|null;
+    private _render: Render|null;
+    private _stage: Stage;
     private _id:string;
-    private _preloadImagePromise: Promise<any>[];
+    public canvas: HTMLCanvasElement|null;
+    public  runtime:Runtime|null;
+    public runningGame: boolean;
+    private _preloadDone: boolean;
+    private _prepaeDone: boolean;
+    private _preloadImagePromise: Promise<{name:string,data: any}>[];
+    private _preloadSoundPromise: Promise<{name:string,data: any}>[];
+    private _preloadFontPromise: Promise<FontFace>[];
+    private _loadedImages: {[key:string]: {name:string,data: any}};
+    private _loadedSounds: {[key:string]: {name:string,data: any}};
+    private _monitors: Monitors;
+    private _flag: HTMLElement|null;
+    private mainTmp: HTMLElement|null;
+    public main: HTMLElement|null;
+    public preload: CallableFunction|null;
+    public prepare: CallableFunction|null;
+    public setting: CallableFunction|null;
+    public draw: CallableFunction|null;
     constructor () {
         this._render = null;
         this._id = this._generateUUID();
+        this.runtime = null;
         this._preloadImagePromise = [];
         this._preloadSoundPromise = [];
         this._preloadFontPromise = [];
         this._loadedImages = {};
         this._loadedSounds = {};
-        this._dataPools = {};
+//        this._dataPools = {};
         this._preloadDone = false;
         this._prepaeDone = false;
 
         this._monitors = null;
+        this.runningGame = false;
+        this.canvas = null;
+        this._flag = null;
+        this.mainTmp = null;
+        this.main = null;
+        this.preload = null;
+        this.prepare = null;
+        this.setting = null;
+        this.draw = null;
     }
     get monitors() {
         return this._monitors;
@@ -49,30 +79,24 @@ const PlayGround = class PlayGround {
     isPrepareDone(){
         return this._prepaeDone;
     }
-    clearPools() {
-        const _pool = this._dataPoolSprite;
-        for (let key in _pool){ 
-            delete this._dataPoolSprite[key]
-        }
-        // for( let key in this._loadedImages){
-        //     delete this._loadedImages[key];
-        // }
-        // for( let key in this._loadedSounds){
-        //     delete this._loadedSounds[key];
-        // }
-    }
+    // clearPools() {
+    //     const _pool = this._dataPoolSprite;
+    //     for (let key in _pool){ 
+    //         delete this._dataPoolSprite[key]
+    //     }
+    // }
     get loadedImages() {
         return this._loadedImages;
     }
     get loadedSounds() {
         return this._loadedSounds;
     }
-    get dataPools() {
-        return this._dataPools;
-    }
-    set dataPools(_dataPool) {
-        this._dataPools = _dataPool;
-    }
+    // get dataPools() {
+    //     return this._dataPools;
+    // }
+    // set dataPools(_dataPool) {
+    //     this._dataPools = _dataPool;
+    // }
     get Element () {
         return Element;
     }
@@ -83,15 +107,16 @@ const PlayGround = class PlayGround {
         return Utils.generateUUID();
     }
     get NowLoading () {
-        return NowLoading;
+        return NowLoadingSVG;
     }
     get threads () {
         return threads;
     }
-    get render () {
+    get render () : Render {
+        if(this._render == undefined) throw 'render is undefined error';
         return this._render;
     }
-    set render( render ) {
+    set render( render:Render ) {
         // _init() の中で設定される。
         this._render = render;
     }
@@ -104,11 +129,17 @@ const PlayGround = class PlayGround {
     }
 
     get $stageWidth () {
-        return this._render.stageWidth;
+        if(this._render){
+            return this._render.stageWidth;
+        }
+        throw 'unable calclulate stageWidth';
     }
 
     get $stageHeight () {
-        return this._render.stageHeight;
+        if(this._render){
+            return this._render.stageHeight;
+        }
+        throw 'unable calclulate stageHeight';
     }
 
 
@@ -117,16 +148,19 @@ const PlayGround = class PlayGround {
      * @returns 
      */
     getRenderRate() {
-        return Libs.default.renderRate;        
+        return libs.renderRate;        
     }
 
 
-    set flag ( flag ) {
+    set flag ( flag:HTMLElement ) {
         this._flag = flag;
     }
 
-    get flag () {
-        return this._flag;
+    get flag () :HTMLElement{
+        if(this._flag){
+            return this._flag;
+        }
+        throw 'unable to get flag element';
     }
 
     ifMainExist() {
@@ -157,7 +191,7 @@ const PlayGround = class PlayGround {
         document.title = _title;
     }
 
-    async _init() {
+    async _init() : Promise<void> {
 //        const keyboard = Keyboard.default;
 //        keyboard.startWatching();
         // Now Loading 準備 START
@@ -165,7 +199,7 @@ const PlayGround = class PlayGround {
         this.mainTmp = mainTmp;
         mainTmp.id = 'mainTmp';
         mainTmp.classList.add('nowLoading');
-        mainTmp.style.zIndex = 9999 ; // 一番手前 ( 本体main z-index= 999)
+        mainTmp.style.zIndex = '9999' ; // 一番手前 ( 本体main z-index= 999)
         mainTmp.style.position = 'absolute'
         mainTmp.style.touchAction = 'manipulation'
         mainTmp.style.width = `${innerWidth}px`
@@ -177,12 +211,19 @@ const PlayGround = class PlayGround {
         await this._waitUntilPreloadDone();   
         await Element.init();
         const main = this.main;
+        if(main == undefined){
+            throw 'unable to add main classList';
+        }
         main.classList.add(Element.DISPLAY_NONE);
         this._render = new Render();
         this.runtime = new Runtime();
+        if(this._render == undefined || this._render.renderer == undefined){
+            throw 'unable to execute attachRenderer';
+        }
         this.runtime.attachRenderer(this._render.renderer);    
-//        this._prepareReload();
-        this.clearPools();
+
+//        this.clearPools();
+
         await this._prepare();
         this._prepaeDone = true;
         await this._setting();
@@ -244,36 +285,38 @@ const PlayGround = class PlayGround {
         }
     }
 
-    $loadImage(imageUrl, name, translate) {
+    $loadImage(imageUrl:string, name:string, translate) {
         let _name ;
         if( name ) {
             _name = name;
         }else{
-            _name = imageUrl.replace(/\.[^.]+$/)
+            _name = imageUrl.replace(/\.[^.]+$/, '');
         }
         const data = ImageLoader.loadImage(imageUrl, _name, translate);
         this._preloadImagePromise.push(data);
         return data;
     }
-    $loadSound(soundUrl, name) {
-        let _name ;
+    $loadSound(soundUrl:string, name:string) :Promise<
+            {name: string, data: Uint8Array<ArrayBuffer>}> {
+        let _name:string ;
         if( name ) {
             _name = name;
         }else{
-            _name = imageUrl.replace(/\.[^.]+$/)
+            _name = soundUrl.replace(/\.[^.]+$/, '');
         }
         const data = SoundLoader.loadSound(soundUrl, _name);
         this._preloadSoundPromise.push(data);
         return data;
     }
-    loadFont(fontUrl, name) {
+    loadFont(fontUrl:string, name:string) : Promise<FontFace> {
         const font = FontLoader.fontLoad(fontUrl, name);
         this._preloadFontPromise.push(font);
         return font;
     }
-    spriteClone( src, callback ) {
-        if( src instanceof P.Sprite ) {
-            src.clone().then( async( c ) =>{
+    spriteClone( src: Object, callback: CallableFunction ) {
+        if( src instanceof libs.Sprite ) {
+            const _src:Sprite = src as Sprite;
+            _src.clone().then( async( c:Entity ) =>{
                 if( callback ) {
                     const _callback = callback.bind( c );
                     _callback();

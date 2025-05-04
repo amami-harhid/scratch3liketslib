@@ -1,4 +1,4 @@
-class SVGParser {
+export class SVGParser {
     
     static instance:SVGParser|null = null;
     static getInstance() {
@@ -69,5 +69,4 @@ class SVGParser {
         return changed;
     }
 }
-const svgParser = SVGParser.getInstance();
-export {svgParser};
+export const svgParser = SVGParser.getInstance();

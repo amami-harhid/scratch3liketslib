@@ -1,6 +1,6 @@
 const Cast = require('../util/cast');
 
-import { S3Runtime } from 'lib/engine/s3Runtime';
+import { Runtime } from 'lib/engine/runtime';
 import type {S3Keyboard, S3DomEventData} from '../../libTypes/io/s3Keyboard';
 
 /**
@@ -49,9 +49,9 @@ export class Keyboard implements S3Keyboard{
         return KEY_NAME.ESCAPE;
     }
     private _keysPressed: string[];
-    private _runtime: S3Runtime;
+    private _runtime: Runtime;
     private _spaceStopPropagation:boolean;
-    constructor (runtime: S3Runtime) {
+    constructor (runtime: Runtime) {
         /**
          * List of currently pressed scratch keys.
          */

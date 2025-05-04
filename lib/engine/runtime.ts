@@ -1,20 +1,20 @@
-import type {S3Renderer} from 'lib/engine/S3Renderer';
-import type {S3Runtime,S3IODevice} from 'lib/engine/s3Runtime';
-import type {S3Keyboard} from 'lib/io/s3Keyboard';
-const EventEmitter = require('events').EventEmitter;
-const StageLayering = require('../stageLayering');
+import type {S3Renderer} from 'libTypes/engine/S3Renderer';
+import type {S3Runtime,S3IODevice} from 'libTypes/engine/s3Runtime';
+import type {S3Keyboard} from 'libTypes/io/s3Keyboard';
+import { EventEmitter } from 'events';
+import { StageLayering } from 'lib/stageLayering';
 // Virtual I/O devices.
-const Clock = require('../io/clock');
-const Keyboard = require('../io/keyboard');
-const Mouse = require('../io/mouse');
-const MouseWheel = require('../io/mouseWheel');
+//const Clock = require('../io/clock');
+import { Keyboard } from 'lib/io/keyboard';
+//const Mouse = require('../io/mouse');
+//const MouseWheel = require('../io/mouseWheel');
 /**
  * runtime
  */
-const Runtime = class extends EventEmitter implements S3Runtime{
+export class Runtime extends EventEmitter{
 
-    private ioDevices:S3IODevice;
-    private renderer: S3Renderer|null;
+    public ioDevices:S3IODevice;
+    public renderer: S3Renderer|null;
     /**
      * @constructor
      */
@@ -28,84 +28,6 @@ const Runtime = class extends EventEmitter implements S3Runtime{
         }
         this.ioDevices = ioDevice;
     }
-    [EventEmitter.captureRejectionSymbol]?<K>(error: Error, event: string | symbol, ...args: any[]): void {
-        // do nothing;
-    }
-    [EventEmitter.captureRejectionSymbol]?<K>(error: Error, event: string | symbol, ...args: any[]): void {
-        // do nothing;
-    }
-    addListener<K>(eventName: string, listener: (...args: any[]) => void): void {
-        // do nothing;
-    }
-    /**
-     * 
-     * @param eventName 
-     * @param listener 
-     * @abstract
-     */
-    on(eventName: string, listener: (...args: any[]) => void) {
-
-    }
-    /**
-     * 
-     * @param eventName 
-     * @param listener 
-     * @abstract
-     */
-    once<K>(eventName: string, listener: (...args: any[]) => void) {
-
-    }
-    /**
-     * 
-     * @param eventName 
-     * @param listener 
-     * @abstract
-     */
-    removeListener<K>(eventName: string, listener: (...args: any[]) => void){
-
-    }
-    /**
-     * 
-     * @param eventName 
-     * @param listener 
-     * @abstract
-     */
-    off<K>(eventName: string | symbol, listener: (...args: any[]) => void) {
-    }
-    /**
-     * 
-     * @param eventName
-     * @abstract 
-     */
-    removeAllListeners(eventName: string) {
-    }
-    setMaxListeners(n: number): this {
-        throw new Error('Method not implemented.');
-    }
-    getMaxListeners(): number {
-        throw new Error('Method not implemented.');
-    }
-    listeners<K>(eventName: string | symbol): Function[] {
-        throw new Error('Method not implemented.');
-    }
-    rawListeners<K>(eventName: string | symbol): Function[] {
-        throw new Error('Method not implemented.');
-    }
-    emit<K>(eventName: string | symbol, ...args: any[]): boolean {
-        throw new Error('Method not implemented.');
-    }
-    listenerCount<K>(eventName: string | symbol, listener?: Function | undefined): number {
-        throw new Error('Method not implemented.');
-    }
-    prependListener<K>(eventName: string | symbol, listener: (...args: any[]) => void): this {
-        throw new Error('Method not implemented.');
-    }
-    prependOnceListener<K>(eventName: string | symbol, listener: (...args: any[]) => void): this {
-        throw new Error('Method not implemented.');
-    }
-    eventNames(): (string | symbol)[] {
-        throw new Error('Method not implemented.');
-    }
 
     get GREEN_BUTTON_ENABLED () {
         return 'GREEN_BUTTON_ENABLED';
@@ -115,10 +37,8 @@ const Runtime = class extends EventEmitter implements S3Runtime{
         this.renderer = renderer;
     }
 
-    keyIsDown(key:string) {
+    keyIsDown(key?:string) {
         return this.ioDevices.keyboard.keyIsDown(key);
     }
 
-}
-
-module.exports = Runtime;
+};

@@ -1,5 +1,5 @@
-const SVGParser = require('../svgParser/parser'); 
-const ImageLoader = class {
+import { svgParser } from "lib/svgParser/parser";
+export class ImageLoader {
 
     static get REGEX_DATA_IMAGE_URL() {
         return /^data:image\\/;
@@ -26,8 +26,8 @@ const ImageLoader = class {
      * @param {{x:number,y:number}} translate 
      * @return {Promise<{name:string,data: any}>} 
      */
-    static async loadImage(image:string, name:string, 
-        translate: { x: number; y: number; }={x:0,y:0}): Promise<{name:string,data: any}> {
+    static async loadImage(image:string, name:string, translate: { x: number; y: number; }={x:0,y:0}
+            ): Promise<{name:string,data: any}> {
         if(image) {
             if(typeof image === 'string') {
                 if(image.match(ImageLoader.REGEX_SVG_DATA_IMAGE_FILE)){
@@ -35,7 +35,7 @@ const ImageLoader = class {
                     if(_text == "ERROR"){
                         throw "ローディングエラー。SVG画像データの指定を確認してください。("+image+")";
                     }
-                    const parser = SVGParser.default;
+                    const parser = svgParser;
                     const svgDoc = parser.parseFromString(_text);
                     const size = parser.getSize();
                     if(size.w > 480 && size.h > 360) {
@@ -78,5 +78,3 @@ const ImageLoader = class {
     }
 
 };
-
-module.exports = ImageLoader;

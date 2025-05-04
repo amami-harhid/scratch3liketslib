@@ -1,5 +1,5 @@
-const FontLoader = class {
-    static async fontLoad(url:string, name:string) {
+export class FontLoader {
+    static async fontLoad(url:string, name:string) : Promise<FontFace>{
         if(url) {
             const font = new FontFace(name, `url(${url})`);
             const _font = await font.load();
@@ -8,7 +8,4 @@ const FontLoader = class {
         // 例外を起こすべきところ。
         throw('Scratch3LikeJS loadFont: empty url')
     }
-
 };
-
-module.exports = FontLoader;

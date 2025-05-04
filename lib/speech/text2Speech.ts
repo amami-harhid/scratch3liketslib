@@ -1,4 +1,5 @@
-const SoundLoader = require('../importer/soundLoader');
+import { SoundLoader } from "../importer/soundLoader";
+import {Sounds} from '../sounds';
 const Sounds = require('../sounds');
 import { Entity } from "lib/entity";
 

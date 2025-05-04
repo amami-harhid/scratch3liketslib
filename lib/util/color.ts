@@ -1,4 +1,4 @@
-class Color {
+export class Color {
     /**
      * @typedef {object} RGBObject - An object representing a color in RGB format.
      * @property {number} r - the red component, in the range [0, 255].
@@ -200,5 +200,3 @@ class Color {
         };
     }
 }
-
-module.exports = Color;

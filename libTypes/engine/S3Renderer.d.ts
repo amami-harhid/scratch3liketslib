@@ -17,6 +17,7 @@ export interface S3Renderer {
     getBoundsForBubble(drawableID:string):{bottom:number, left:number, right:number};
     getCurrentSkinSize(drawableID:string):number[];
     getNativeSize (): number[];
+    gl:any;
     _nextSkinId: number;
     pick(mouseX:number, mouseY:number, touchWidth:number, touchHeight:number, candidateIDs: string[]): string;
     resize(w:number, h:number):void;

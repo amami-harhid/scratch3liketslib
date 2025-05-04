@@ -1,7 +1,7 @@
-import { Entity } from "lib/entity";
-import { playGround } from "lib/playGround";
-import { StageLayering } from "lib/stageLayering";
-import { Utils } from "lib/utils";
+import { Entity } from "../entity";
+import { playGround } from "../playGround";
+import { StageLayering } from "../stageLayering";
+import { Utils } from "../utils";
 export class Monitor extends Entity {
     static Events = {
         DROP_START: 'DropStart',

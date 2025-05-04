@@ -1,5 +1,4 @@
-const Color = require('../util/color');
-
+import { Color } from "./color";
 /**
  * @fileoverview
  * Utilities for casting and comparing Scratch data-types.
@@ -11,7 +10,7 @@ const Color = require('../util/color');
  * Use when coercing a value before computation.
  */
 
-class Cast {
+export class Cast {
     /**
      * Scratch cast to number.
      * Treats NaN as 0.
@@ -179,14 +178,15 @@ class Cast {
      * @param {*} val Value to check.
      * @return {boolean} True if number looks like an integer.
      */
-    static isInt (val) {
+    static isInt (val: any) {
         // Values that are already numbers.
         if (typeof val === 'number') {
             if (isNaN(val)) { // NaN is considered an integer.
                 return true;
             }
             // True if it's "round" (e.g., 2.0 and 2).
-            return val === parseInt(val, 10);
+            const _val = `${val}`;
+            return val === parseInt(_val, 10);
         } else if (typeof val === 'boolean') {
             // `True` and `false` always represent integer after Scratch cast.
             return true;
@@ -239,5 +239,3 @@ class Cast {
         return index;
     }
 }
-
-module.exports = Cast;

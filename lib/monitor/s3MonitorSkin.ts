@@ -1,12 +1,13 @@
-import { Canvas } from 'lib/canvas';
+import { Canvas } from '../canvas';
 import { EventEmitter } from 'events';
-import { Render } from 'lib/render';
+import { Render } from '../render';
 import {S3CanvasMeasurementProvider} from './s3-canvas-measurement-provider';
-import { S3Renderer } from 'libTypes/engine/S3Renderer';
+import { S3Renderer } from '../../libTypes/engine/S3Renderer';
 import {MonitorRenderingConstants} from './s3RenderConstants';
 import { S3Silhouette } from './s3Silhouette';
 import { S3TextWrapper } from './s3-text-wrapper';
 import * as twgl from 'twgl.js';
+import { S3Drawable } from 'libTypes/engine/S3Drowable';
 const MonitorStyle = {
     MAX_LINE_WIDTH: 480,  // stage width
     PADDING_VALUE_VIRTICAL: 5, // Padding around the value text area
@@ -34,6 +35,14 @@ const MonitorStyle = {
 
 };
 export class S3MonitorSkin extends EventEmitter {
+    public static Events = {
+        /**
+         * This constant value is same as Skin class
+         * Emitted when anything about the Skin has been altered, such as the appearance or rotation center.
+         * @event S3MonitorSkin.event:WasAltered
+         */
+        WasAltered: 'WasAltered'
+    };
     private _id: number;
     private _renderer: S3Renderer;
     private _size: number[];
@@ -54,6 +63,11 @@ export class S3MonitorSkin extends EventEmitter {
     private _y: number;
     private _visible: boolean;
     private _dropping: boolean;
+    private _canvas: HTMLCanvasElement|null;
+    private _ctx: CanvasRenderingContext2D|null;
+    private _measurementProvider: S3CanvasMeasurementProvider|null;
+    public textWrapper:S3TextWrapper|null;
+    private _text: string | null;
     /**
      * Create a S3Skin, which stores and/or generates textures for use in rendering.
      * @param {int} id - The unique ID for this S3Skin.
@@ -105,6 +119,7 @@ export class S3MonitorSkin extends EventEmitter {
              * @type {WebGLTexture}
              */
             u_skin: null
+            
         };
         /**
          * A silhouette to store touching data, skins are responsible for keeping it up to date.
@@ -118,9 +133,13 @@ export class S3MonitorSkin extends EventEmitter {
         this.createCanvas();
         this._restyleCanvas();
 
-        /** drop */
+        /** adding */
         this._dropping = false;
-
+        this._canvas = null;
+        this._ctx = null;
+        this._measurementProvider = null;
+        this.textWrapper = null;
+        this._text = null;
     }
     get dropping( ) {
         return this._dropping;
@@ -132,8 +151,9 @@ export class S3MonitorSkin extends EventEmitter {
         /** @type {HTMLCanvasElement} */
         this._canvas = document.createElement('canvas');
         this._ctx = this._canvas.getContext('2d', { willReadFrequently: true });
-        this.measurementProvider = new S3CanvasMeasurementProvider(this._ctx);
-        this.textWrapper = new S3TextWrapper(this.measurementProvider);
+        if(this._ctx == undefined) throw 'Unable to get ctx';
+        this._measurementProvider = new S3CanvasMeasurementProvider(this._ctx);
+        this.textWrapper = new S3TextWrapper(this._measurementProvider);
 
     }
     getDefaultHeight(){
@@ -164,7 +184,7 @@ export class S3MonitorSkin extends EventEmitter {
     /**
      * @return {Array<number>} the "native" size, in texels, of this skin.
      */
-    get size () {
+    get size () :number[]{
         if (this._textDirty) {
             this._reflowLines();
         }
@@ -178,41 +198,54 @@ export class S3MonitorSkin extends EventEmitter {
      * @return {boolean} True if this skin's texture, as returned by {@link getTexture}, should be filtered with
      * nearest-neighbor interpolation.
      */
-    useNearest (scale, drawable) {
+    useNearest (scale:number[], drawable:S3Drawable):boolean {
         return true;
     }
 
-    get x () {
+    get x () :number{
         return this._x;
     }
-    get y () {
+    get y () :number{
         return this._y;
     }
-    set x (_x) {
+    set x (_x: number) {
         this._x = _x;
     }
-    set y (_y) {
+    set y (_y: number) {
         this._y = _y;
     }
     /**
      * textAreaSize
      * @return {Array<number>} textAreaSize 
      */
-    get textAreaSize() {
+    get textAreaSize() :{width:number, height:number}{
         return this._textAreaSize;
     }
     /**
      * Get the center of the current bounding box
      * @returns {Array<number>} the center of the current bounding box
      */
-    calculateRotationCenter () {
+    calculateRotationCenter () : number[] {
         return [this.size[0] / 2, this.size[1] / 2];
+    }
+    private get canvas(): HTMLCanvasElement {
+        if(this._canvas == undefined) throw 'canvas null error';
+        return this._canvas;
+
+    }
+    private get ctx() :CanvasRenderingContext2D{
+        if(this._ctx == undefined) throw 'ctx null error';
+        return this._ctx;
+    }
+    private get measurementProvider() :S3CanvasMeasurementProvider{
+        if(this._measurementProvider == undefined) throw 'measurementProvider null error';
+        return this._measurementProvider;
     }
     /**
      * @param {Array<number>} scale - The scaling factors to be used.
      * @return {WebGLTexture} The GL texture representation of this skin when drawing at the given size.
      */
-    getTexture (scale) {
+    getTexture (scale:number[]) : WebGLTexture {
         // The texture only ever gets uniform scale. Take the larger of the two axes.
         const scaleMax = scale ? Math.max(Math.abs(scale[0]), Math.abs(scale[1])) : 100;
         const requestedScale = scaleMax / 100;
@@ -221,7 +254,7 @@ export class S3MonitorSkin extends EventEmitter {
             this._renderTextMonitor(requestedScale);
             this._textureDirty = false;
 
-            const textureData = this._ctx.getImageData(0, 0, this._canvas.width, this._canvas.height);
+            const textureData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
             const gl = this._renderer.gl;
 
@@ -237,20 +270,21 @@ export class S3MonitorSkin extends EventEmitter {
             this._setTexture(textureData);
         }
 
+        if(this._texture == undefined) throw 'texture undefined error ';
         return this._texture;
     }
     /**
      * If the skin defers silhouette operations until the last possible minute,
      * this will be called before isTouching uses the silhouette.
      */
-    updateSilhouette (scale = [100, 100]) {
+    updateSilhouette (scale = [100, 100]) :void {
         this.getTexture(scale);
     }    
     /**
      * Set this skin's texture to the given image.
      * @param {ImageData|HTMLCanvasElement} textureData - The canvas or image data to set the texture to.
      */
-    _setTexture (textureData) {
+    _setTexture (textureData) :void {
         const gl = this._renderer.gl;
         gl.bindTexture(gl.TEXTURE_2D, this._texture);
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
@@ -259,27 +293,27 @@ export class S3MonitorSkin extends EventEmitter {
 
         this._silhouette.update(textureData);
     }
-    show() {
+    show() :void{
         this._visible = true;
     }
-    hide() {
+    hide() :void{
         this._visible = false;
     }
     /**
      * Set parameters for this text monitor.
-     * @param {string} text 
+     * @param {string} value 
      */
-    set value (_value) {
-        this._text = _value;
+    set value (value : any) {
+        this._text = value;
         this._textDirty = true;
         this._textureDirty = true;
         this.emit(S3MonitorSkin.Events.WasAltered);
     }
-    get value() {
+    get value() : any{
         return this._text;
     }
-    _restyleCanvas () {
-        this._canvas.getContext('2d').font = `${MonitorStyle.FONT_SIZE}px ${MonitorStyle.FONT}, sans-serif`;
+    _restyleCanvas () :void{
+        this.ctx.font = `${MonitorStyle.FONT_SIZE}px ${MonitorStyle.FONT}, sans-serif`;
     }
     /**
      * Update the array of wrapped lines and the text dimensions.
@@ -316,7 +350,7 @@ export class S3MonitorSkin extends EventEmitter {
      */
     _renderTextMonitor (scale) {
         const _scale = scale;
-        const ctx = this._ctx;
+        const ctx = this.ctx;
         if (this._textDirty) {
             this._reflowLines();
         }
@@ -325,14 +359,14 @@ export class S3MonitorSkin extends EventEmitter {
         const paddedHeight = this._textAreaSize.height;
 
         // Resize the canvas to the correct screen-space size
-        this._canvas.width = Math.ceil(this._size[0] * _scale);
-        this._canvas.height = Math.ceil(this._size[1] * _scale);
+        this.canvas.width = Math.ceil(this._size[0] * _scale);
+        this.canvas.height = Math.ceil(this._size[1] * _scale);
 
         this._restyleCanvas();
         if(this._visible === true){
             // Reset the transform before clearing to ensure 100% clearage
             ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
             ctx.scale(scale, scale);
             ctx.translate(MonitorStyle.PADDING * 0.5, 
@@ -431,7 +465,7 @@ export class S3MonitorSkin extends EventEmitter {
      * @param {Array<number>} scale - The scaling factors to be used.
      * @returns {object.<string, *>} the shader uniforms to be used when rendering with this Skin.
      */
-    getUniforms (scale) {
+    getUniforms (scale:number[]) {
        this._uniforms.u_skin = this.getTexture(scale);
        this._uniforms.u_skinSize = this.size;
        return this._uniforms;
@@ -445,7 +479,7 @@ export class S3MonitorSkin extends EventEmitter {
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} Did it touch?
      */
-    isTouchingNearest (vec) {
+    isTouchingNearest (vec: twgl.v3.Vec3) {
         return this._silhouette.isTouchingNearest(vec); 
     }
 
@@ -458,7 +492,7 @@ export class S3MonitorSkin extends EventEmitter {
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} Did it touch?
      */
-    isTouchingLinear (vec) {
+    isTouchingLinear (vec: twgl.v3) {
         return this._silhouette.isTouchingLinear(vec);
     }
 

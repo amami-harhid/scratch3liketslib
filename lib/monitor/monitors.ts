@@ -1,6 +1,6 @@
 import { Monitor } from "./monitor";
-import { playGround } from "lib/playGround";
-import { S3MonitorSkin } from "lib/monitor/s3MonitorSkin";
+import { playGround } from "../playGround";
+import { S3MonitorSkin } from "./s3MonitorSkin";
 export class Monitors {
     private _monitors: Monitor[];
     /**

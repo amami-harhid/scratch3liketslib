@@ -1,8 +1,8 @@
 import {EventEmitter} from 'events';
-import { playGround } from 'lib/playGround';
-import { Utils } from 'lib/utils';
-import { Entity } from 'lib/entity';
-import { Stage } from 'lib/stage';
+import { playGround } from '../playGround';
+import { Utils } from '../utils';
+import { Entity } from '../entity';
+import { Stage } from '../stage';
 
 /** div include canvas */
 const CanvasDiv = 'canvasDiv';

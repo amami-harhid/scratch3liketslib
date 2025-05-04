@@ -1,4 +1,4 @@
-import { svgParser } from "lib/svgParser/parser";
+import { svgParser } from "../svgParser/parser";
 export class ImageLoader {
 
     static get REGEX_DATA_IMAGE_URL() {

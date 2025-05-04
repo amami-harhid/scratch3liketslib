@@ -1,3 +1,5 @@
+import * as twgl from 'twgl.js';
+
 /**
  * @fileoverview
  * A representation of a Skin's silhouette that can test if a point on the skin
@@ -188,7 +190,7 @@ export class S3Silhouette {
      * @param {Uint8ClampedArray} dst The memory buffer to store the value in. (4 bytes)
      * @returns {Uint8ClampedArray} dst
      */
-    colorAtNearest? (vec:number[], dst:Uint8ClampedArray) : Uint8ClampedArray{
+    colorAtNearest? (vec:twgl.v3.Vec3, dst:Uint8ClampedArray) : Uint8ClampedArray{
         return this._getColor(
             this,
             Math.floor(vec[0] * (this._width - 1)),
@@ -204,7 +206,7 @@ export class S3Silhouette {
      * @param {Uint8ClampedArray} dst The memory buffer to store the value in. (4 bytes)
      * @returns {Uint8ClampedArray} dst
      */
-    colorAtLinear? (vec:number[], dst:Uint8ClampedArray) : Uint8ClampedArray{
+    colorAtLinear? (vec:twgl.v3.Vec3, dst:Uint8ClampedArray) : Uint8ClampedArray{
         const x = vec[0] * (this._width - 1);
         const y = vec[1] * (this._height - 1);
 
@@ -234,7 +236,7 @@ export class S3Silhouette {
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} If the nearest pixel has an alpha value.
      */
-    isTouchingNearest (vec:number[]): boolean {
+    isTouchingNearest (vec:twgl.v3.Vec3): boolean {
         if (!this._colorData) return false;
         return getPoint(
             this,
@@ -249,7 +251,7 @@ export class S3Silhouette {
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} Any of the pixels have some alpha.
      */
-    isTouchingLinear (vec:number[]) :boolean {
+    isTouchingLinear (vec:twgl.v3.Vec3) :boolean {
         if (!this._colorData) return false;
         const x = Math.floor(vec[0] * (this._width - 1));
         const y = Math.floor(vec[1] * (this._height - 1));

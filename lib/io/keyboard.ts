@@ -1,6 +1,5 @@
-const Cast = require('../util/cast');
-
-import { Runtime } from 'lib/engine/runtime';
+import { Cast } from '../util/cast';
+import { Runtime } from '../engine/runtime';
 import type {S3Keyboard, S3DomEventData} from '../../libTypes/io/s3Keyboard';
 
 /**

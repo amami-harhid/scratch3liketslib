@@ -1,11 +1,11 @@
-import type {S3Renderer} from 'libTypes/engine/S3Renderer';
-import type {S3Runtime,S3IODevice} from 'libTypes/engine/s3Runtime';
-import type {S3Keyboard} from 'libTypes/io/s3Keyboard';
+import type {S3Renderer} from '../../libTypes/engine/S3Renderer';
+import type {S3Runtime,S3IODevice} from '../../libTypes/engine/s3Runtime';
+import type {S3Keyboard} from '../../libTypes/io/s3Keyboard';
 import { EventEmitter } from 'events';
-import { StageLayering } from 'lib/stageLayering';
+import { StageLayering } from '../stageLayering';
 // Virtual I/O devices.
 //const Clock = require('../io/clock');
-import { Keyboard } from 'lib/io/keyboard';
+import { Keyboard } from '../io/keyboard';
 //const Mouse = require('../io/mouse');
 //const MouseWheel = require('../io/mouseWheel');
 /**

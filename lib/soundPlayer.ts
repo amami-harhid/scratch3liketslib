@@ -1,34 +1,29 @@
-const {SoundOption} = require('./types');
-import {S3SoundPlayer} from 'libTypes/engine/S3SoundPlayer';
-import {S3AudioEffectChain} from 'libTypes/engine/S3AudioEffectChain';
-declare type SoundPlayerOptions = {
-    volume?:number,
-    pitch?:number,
-    effects?:S3AudioEffectChain,
-};
+import {S3SoundPlayer} from '../libTypes/engine/S3SoundPlayer';
+import {S3AudioEffectChain} from '../libTypes/engine/S3AudioEffectChain';
+import {S3SoundPlayerOptions} from '../libTypes/engine/S3SoundPlayerOptoins';
 export class SoundPlayer {
     private _name: string;
     private _soundPlayer: S3SoundPlayer;
-    private _options: SoundPlayerOptions;
+    private _options: S3SoundPlayerOptions;
     private _volume: number;
     private _pitch: number;
     private connectDone: boolean;
-    private _effects: S3AudioEffectChain|null;
-    constructor(name: string, _soundPlayer:S3SoundPlayer, options:SoundPlayerOptions = {}) {
+    private _effects: S3AudioEffectChain;
+    constructor(name: string, _soundPlayer:S3SoundPlayer, options:S3SoundPlayerOptions = {}) {
         this._name = name;
         this._soundPlayer = _soundPlayer;
         this._options = options;
         this._volume = ( options.volume )? options.volume: 100;
         this._pitch = ( options.pitch )? options.pitch: 1;
         this.connectDone = false;
-        if(this._options.effects ) {
-            this._effects = this._options.effects;
+        this._effects = (this._options.effects)?this._options.effects:{};
+        if(this._effects && this._effects.set && this._effects.volume) {
             this._soundPlayer.setPlaybackRate(this._pitch);
             this._effects.set(this._effects.volume.name, this._volume);
             this._effects.volume.update();
             this.connect();
         }else{
-            this._effects = null;
+            this._effects = {};
         }
     }
     set pitch( pitch ) {
@@ -39,7 +34,7 @@ export class SoundPlayer {
         return this._pitch;
     }
     set volume( volume) {
-        if(this._effects){
+        if(this._effects && this._effects.set && this._effects.volume){
             this._volume = volume;
             this._effects.set(this._effects.volume.name, this._volume);
             this._effects.volume.update();    
@@ -49,7 +44,7 @@ export class SoundPlayer {
         return this._volume;
     }
 
-    get soundPlayer() {
+    get soundPlayer() :S3SoundPlayer {
         return this._soundPlayer;
 
     }
@@ -70,7 +65,7 @@ export class SoundPlayer {
             }
         }
     }
-    play() {
+    play() :void {
         this._soundPlayer.play();
     }
     async startSoundUntilDone() {

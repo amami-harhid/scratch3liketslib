@@ -1,14 +1,16 @@
-const Target = require('../engine/target');
-
-const RenderedTarget = class extends Target {
-    constructor(sprite, runtime) {
+import { Target } from "lib/engine/target";
+import { Entity } from "lib/entity";
+import { Runtime } from "../engine/runtime";
+import { S3Renderer } from "../../libTypes/engine/S3Renderer";
+export class RenderedTarget extends Target {
+    private sprite : Entity;
+    private renderer: S3Renderer|null;
+    private drawableID: string;
+    constructor(sprite:Entity, runtime:Runtime) {
         super(runtime);
         this.sprite = sprite;
-        this.renderer = null;
-        if (this.runtime) {
-            this.renderer = this.runtime.renderer;
-        }
-        this.drawableID = null;
+        this.renderer = runtime.renderer;
+        this.drawableID = '';
         this.effects = {
             color: 0,
             fisheye: 0,

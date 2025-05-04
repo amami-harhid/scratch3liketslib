@@ -67,7 +67,10 @@ export class S3MonitorSkin extends EventEmitter {
     private _ctx: CanvasRenderingContext2D|null;
     private _measurementProvider: S3CanvasMeasurementProvider|null;
     public textWrapper:S3TextWrapper|null;
-    private _text: string | null;
+    private _text: string;
+    public titleLineWidth:number;
+    public valueLineWidth:number;
+    public actualValueLineWidth:number;
     /**
      * Create a S3Skin, which stores and/or generates textures for use in rendering.
      * @param {int} id - The unique ID for this S3Skin.
@@ -139,7 +142,10 @@ export class S3MonitorSkin extends EventEmitter {
         this._ctx = null;
         this._measurementProvider = null;
         this.textWrapper = null;
-        this._text = null;
+        this._text = '';
+        this.titleLineWidth = -1;
+        this.valueLineWidth = -1;
+        this.actualValueLineWidth = -1;
     }
     get dropping( ) {
         return this._dropping;
@@ -492,7 +498,7 @@ export class S3MonitorSkin extends EventEmitter {
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} Did it touch?
      */
-    isTouchingLinear (vec: twgl.v3) {
+    isTouchingLinear (vec: twgl.v3.Vec3) {
         return this._silhouette.isTouchingLinear(vec);
     }
 

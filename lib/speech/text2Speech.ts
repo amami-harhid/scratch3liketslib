@@ -1,9 +1,10 @@
 import { SoundLoader } from "../importer/soundLoader";
-import {Sounds} from '../sounds';
-const Sounds = require('../sounds');
-import { Entity } from "lib/entity";
+import { Sounds } from '../sounds';
+import { S3SoundPlayerOptions } from '../../libTypes/engine/S3SoundPlayerOptoins';
+import { Entity } from "../entity";
 
-const SERVER = 'https://synthesis-service.scratch.mit.edu';
+//const SERVER = 'https://synthesis-service.scratch.mit.edu';
+
 /**
  * The url of the synthesis server.
  * @type {string}
@@ -63,7 +64,7 @@ const FEMALE_GIANT_RATE = 0.79; // -4 semitones
 const ENGLISH_ID = 'en';
 const JAPANESE_ID = 'ja';
 
-const GENDER = class {
+export const GENDER = class {
     static get MALE() {
         return 'male';
     }
@@ -164,11 +165,11 @@ export class Speech {
      * A default language to use for speech synthesis.
      * @type {string}
      */
-    get DEFAULT_LANGUAGE () {
+    get DEFAULT_LANGUAGE () :string{
         return JAPANESE_ID;
     }
 
-    speech(self:Entity, words, properties={}) {
+    speech(entity:Entity, words:string, properties:S3SoundPlayerOptions={}):void {
         // 128文字までしか許容しないとする
         const text = encodeURIComponent(words.substring(0, 128));
         let path = `${SERVER_HOST}/synth?locale=${this.locale}&gender=${this.gender}&text=${text}`;
@@ -177,22 +178,22 @@ export class Speech {
             const me = this;
             SoundLoader.loadSound(path,name).then(_sound=>{
                 me.cache.set(path, _sound);
-                me._speechPlay(_sound.name, _sound.data, properties);
+                me._speechPlay(entity, _sound.name, _sound.data, properties);
             });
         }else{
             const _sound = this.cache.get(path);
-            this._speechPlay(_sound.name, _sound.data, properties);
+            this._speechPlay(entity, _sound.name, _sound.data, properties);
         }
     }
     
-    _speechPlay(name, data, properties) {
-        const sounds = new Sounds();
+    _speechPlay(entity: Entity, name:string, data: Uint8Array<ArrayBuffer>, properties:S3SoundPlayerOptions): void {
+        const sounds = new Sounds(entity);
         sounds.setSound(name, data, properties).then(_=>{
             sounds.play();
         });
     }
 
-    async speechAndWait(entity, words, properties={}) {
+    async speechAndWait(entity:Entity, words:string, properties:S3SoundPlayerOptions={}):Promise<void> {
         // 128文字までしか許容しないとする
         const text = encodeURIComponent(words.substring(0, 128));
         let path = `${SERVER_HOST}/synth?locale=${this.locale}&gender=${this.gender}&text=${text}`;
@@ -205,8 +206,8 @@ export class Speech {
         await this._speechPlayUntilDone(entity, sound.name, sound.data, properties);
     }
     
-    async _speechPlayUntilDone(entity, name, data, properties) {
-        const sounds = new Sounds();
+    async _speechPlayUntilDone(entity: Entity, name:string, data:Uint8Array<ArrayBuffer>, properties:S3SoundPlayerOptions) :Promise<void>{
+        const sounds = new Sounds(entity);
         await sounds.setSound(name, data, properties);
         await sounds.startSoundUntilDone(entity);
     }

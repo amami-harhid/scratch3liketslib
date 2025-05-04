@@ -235,11 +235,11 @@ export class Entity extends EventEmitter {
         await costume.loadImage(name, imageUrl);
         this.importAllDone[_importIdx] = true;
     }
-    async importSound( sound ) {
-        if ( this.sounds == null ) this.sounds = new Sounds(this);
-        const soundData = await this.sounds.importSound( sound );
-        return soundData;
-    }
+    // async importSound( sound ) {
+    //     if ( this.sounds == null ) this.sounds = new Sounds(this);
+    //     const soundData = await this.sounds.importSound( sound );
+    //     return soundData;
+    // }
     async _addSound(name, soundData, options={}) {
         if(name == undefined || typeof name != "string"){
             throw "【Sound.add】正しい name を指定してください"

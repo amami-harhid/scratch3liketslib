@@ -1,26 +1,35 @@
-const AudioEngine = require('scratch-audio');
-const SoundLoader = require('./importer/soundLoader');
+import AudioEngine from 'scratch-audio';
+import { Entity } from './entity';
+import { SoundLoader } from './importer/soundLoader';
 //const Process = require('./process');
-const SoundPlayer = require('./soundPlayer');
-const threads = require('./threads');
-const Sounds = class {
+import { SoundPlayer } from './soundPlayer';
+import { S3AudioEffectChain } from 'libTypes/engine/S3AudioEffectChain';
+import { S3SoundPlayerOptions } from '../libTypes/engine/S3SoundPlayerOptoins';
 
-    constructor(entity) {
+export class Sounds {
+    public entity: Entity;
+    public audioEngine: AudioEngine;
+    public soundPlayers: Map<string, SoundPlayer>;
+    public soundPlayer: SoundPlayer|undefined;
+    public soundIdx: number;
+    constructor(entity: Entity) {
         this.entity = entity;
         this.audioEngine = new AudioEngine();
-        this.soundPlayers = new Map();
-        this.soundPlayer = null;
+        this.soundPlayers = new Map<string,SoundPlayer>();
+        this.soundPlayer = undefined;
         this.soundIdx = 0;
     }
-    async importSound( sound ) {
-        const soundData = await SoundLoader.loadSound(sound);
-        return soundData;
-    }
-    async setSound( name, soundData, options = {} ) {
+    // ==== 未使用 =====
+    // async importSound( sound ) {
+    //     const soundData = await SoundLoader.loadSound(sound);
+    //     return soundData;
+    // }
+
+    async setSound( name:string, soundData:Uint8Array<ArrayBuffer>, options:S3SoundPlayerOptions = {} ) :Promise<void> {
         // audioEngine.decodeSoundPlayerの引数は {data} の形にする。変数名は dataでないといけない。
         const data = soundData;
         const _soundPlayer = await this.audioEngine.decodeSoundPlayer({data});
-        const _effects = this.audioEngine.createEffectChain();
+        const _effects:S3AudioEffectChain = this.audioEngine.createEffectChain();
         const _options = options;
         _options.effects = _effects;
         const soundPlayer = new SoundPlayer(name, _soundPlayer, _options);
@@ -29,14 +38,14 @@ const Sounds = class {
         }
         this.soundPlayers.set(name, soundPlayer);
         // effects は インスタンスを作るときに渡しているので引数省略。
-        soundPlayer.connect(_effects);
+        soundPlayer.connect();
 
     }
-    async loadSound( name, sound , options = {}) {
-        const data = await SoundLoader.loadSound(sound);
-        await this.setSound(name, data, options);
+    async loadSound( name:string, sound:string , options = {}) : Promise<void>{
+        const data = await SoundLoader.loadSound(sound, name);
+        await this.setSound(name, data.data, options);
     }
-    switch(name) {
+    switch(name:string) :void{
         const me = this;
         const _keys = Array.from(this.soundPlayers.keys());
         if( _keys.length > 1) {
@@ -73,11 +82,11 @@ const Sounds = class {
     }
     play() {
         if ( this.soundPlayer == null) return;
-        const _effects = this.soundPlayer.effects;
-        this.soundPlayer.connect(_effects);
+        //const _effects = this.soundPlayer.effects;
+        this.soundPlayer.connect();
         this.soundPlayer.play();
     }
-    setVolume(volume, name) {
+    setVolume(volume:number, name:string) {
         if(name) {
             const me = this;
             const _keys = Array.from(this.soundPlayers.keys());
@@ -85,7 +94,9 @@ const Sounds = class {
                 _keys.map((_name,_idx)=>{
                     if ( _name == name ) {
                         const _soundPlayer = this.soundPlayers.get(name);
-                        _soundPlayer.volume = volume;               
+                        if(_soundPlayer){
+                            _soundPlayer.volume = volume;               
+                        }
                     }
                 });
             } else {
@@ -97,69 +108,75 @@ const Sounds = class {
             this.soundPlayer.volume = volume;
         }
     }
-    set volume(volume = 100) {
+    set volume(volume : number) {
         if ( this.soundPlayer == null) return;
         // 現在選択中の soundPlayerへ設定する
         this.soundPlayer.volume = volume;
     }
-    get volume(){
-        if ( this.soundPlayer == null) return;
+    get volume() :number{
+        if ( this.soundPlayer == null) return -1;
         // 現在選択中の soundPlayerから取得する
         return this.soundPlayer.volume;
     }
-    set pitch(pitch = 1) {
+    set pitch(pitch: number){
         if ( this.soundPlayer == null) return;
         // 現在選択中の soundPlayerへ設定する
         this.soundPlayer.pitch = pitch;
     }
-    get pitch() {
-        if ( this.soundPlayer == null) return;
+    get pitch() : number {
+        if ( this.soundPlayer == null) return Infinity;
         // 現在選択中の soundPlayerから取得する
         return this.soundPlayer.pitch;
     }
-    async startSoundUntilDone(self) {
+    async startSoundUntilDone(self:Entity) {
         if ( this.soundPlayer == null) return;
         if(self){
             const me = this;
-            return new Promise(async resolve=>{
-                const _f = _=>{
-                    me.stopImmediately();
-                    resolve();
-                }
+            return new Promise<void>(async resolve=>{
                 // Entity.$speechStopImmediately()でEmitされる
-                const EMIT_ID = self.SOUND_FORCE_STOP;
-                self.once(EMIT_ID,_f);
-                await me.soundPlayer.startSoundUntilDone(); // 終わるまで待つ
-                self.removeListener(EMIT_ID, _f);
-                resolve();    
+                if(me.soundPlayer == undefined) {
+                    resolve();
+                }else{
+                    const _f = _=>{
+                        me.stopImmediately();
+                        resolve();
+                    }
+                    const EMIT_ID = self.SOUND_FORCE_STOP;
+                    self.once(EMIT_ID,_f);
+                    await me.soundPlayer.startSoundUntilDone(); // 終わるまで待つ
+                    self.removeListener(EMIT_ID, _f);
+                    resolve();        
+                }
             })    
         }else{
             const me = this;
             //await this.soundPlayer.startSoundUntilDone(); // 終わるまで待つ
-            return new Promise(async resolve=>{
+            return new Promise<void>(async resolve=>{
                 // me.entity は constructorで受け取る Sprite/Stage のentity
-                const _f = _=>{
-                    me.stopImmediately();
+                if(me.soundPlayer == undefined) {
+                    resolve();
+                }else{
+                    const _f = _=>{
+                        me.stopImmediately();
+                        resolve();
+                    }
+                    const EMIT_ID = me.entity.SOUND_FORCE_STOP;
+                    me.entity.once(EMIT_ID, _f);
+                    await me.soundPlayer.startSoundUntilDone(); // 終わるまで待つ
+                    me.entity.removeListener(EMIT_ID, _f);
                     resolve();
                 }
-                const EMIT_ID = me.entity.SOUND_FORCE_STOP;
-                me.entity.once(EMIT_ID, _f);
-                await me.soundPlayer.startSoundUntilDone(); // 終わるまで待つ
-                me.entity.removeListener(EMIT_ID, _f);
-                resolve();
             });
             
         }
     }
-    stop() {
+    stop() :void {
         if ( this.soundPlayer == null) return;
         this.soundPlayer.stop();
     }
 
-    stopImmediately() {
+    stopImmediately() :void{
         if ( this.soundPlayer == null) return;
         this.soundPlayer.stopImmediately();
     }
 };
-
-module.exports = Sounds;

@@ -1,5 +1,5 @@
-import { Target } from "lib/engine/target";
-import { Entity } from "lib/entity";
+import { Target } from "../engine/target";
+import { Entity } from "../entity";
 import { Runtime } from "../engine/runtime";
 import { S3Renderer } from "../../libTypes/engine/S3Renderer";
 export class RenderedTarget extends Target {

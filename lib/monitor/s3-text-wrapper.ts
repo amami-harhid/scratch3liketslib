@@ -21,6 +21,7 @@ const GraphemeBreaker = require('!ify-loader!grapheme-breaker');
  */
 export class S3TextWrapper {
     private _measurementProvider: S3CanvasMeasurementProvider;
+    private _cache: {[key:string]: string[]}
     /**
      * Construct a text wrapper which will measure text using the specified measurement provider.
      * @param {MeasurementProvider} measurementProvider - a helper object to provide text measurement services.
@@ -45,13 +46,13 @@ export class S3TextWrapper {
             return this._cache[cacheKey];
         }
 
-        const measurementSession = this._measurementProvider.beginMeasurementSession();
+        this._measurementProvider.beginMeasurementSession();
 
         const breaker = new LineBreaker(text);
         let lastPosition = 0;
         let nextBreak;
         let currentLine:string|null = null;
-        const lines = [];
+        const lines: string[] = [];
 
         while ((nextBreak = breaker.nextBreak())) {
             const word = text.slice(lastPosition, nextBreak.position).replace(/\n+$/, '');
@@ -105,7 +106,7 @@ export class S3TextWrapper {
         }
 
         this._cache[cacheKey] = lines;
-        this._measurementProvider.endMeasurementSession(measurementSession);
+        this._measurementProvider.endMeasurementSession();
         return lines;
     }
 }

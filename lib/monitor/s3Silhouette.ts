@@ -12,8 +12,8 @@ let __SilhouetteUpdateCanvas;
 
 // Optimized Math.min and Math.max for integers;
 // taken from https://web.archive.org/web/20190716181049/http://guihaire.com/code/?p=549
-const intMin = (i, j) => j ^ ((i ^ j) & ((i - j) >> 31));
-const intMax = (i, j) => i ^ ((i ^ j) & ((i - j) >> 31));
+const intMin = (i:number, j:number): number => j ^ ((i ^ j) & ((i - j) >> 31));
+const intMax = (i:number, j:number):number => i ^ ((i ^ j) & ((i - j) >> 31));
 
 /**
  * Internal helper function (in hopes that compiler can inline).  Get a pixel
@@ -24,12 +24,12 @@ const intMax = (i, j) => i ^ ((i ^ j) & ((i - j) >> 31));
  * @param {number} y - y
  * @return {number} Alpha value for x/y position
  */
-const getPoint = ({_width: width, _height: height, _colorData: data}, x, y) => {
+const getPoint = (shilhouse:S3Silhouette, x:number, y:number):number => {
     // 0 if outside bounds, otherwise read from data.
-    if (x >= width || y >= height || x < 0 || y < 0) {
+    if (x >= shilhouse.width || y >= shilhouse.height || x < 0 || y < 0) {
         return 0;
     }
-    return data[(((y * width) + x) * 4) + 3];
+    return shilhouse.data[(((y * shilhouse.width) + x) * 4) + 3];
 };
 
 /**
@@ -41,7 +41,9 @@ const __cornerWork = [
     new Uint8ClampedArray(4),
     new Uint8ClampedArray(4)
 ];
-
+declare interface GET_FUNCTION {
+    COLOR_4B(shilhouse:S3Silhouette, x:number, y:number, dst:Uint8ClampedArray) : Uint8ClampedArray;
+}
 /**
  * Get the color from a given silhouette at an x/y local texture position.
  * Multiply color values by alpha for proper blending.
@@ -51,23 +53,23 @@ const __cornerWork = [
  * @param {Uint8ClampedArray} dst A color 4b space.
  * @return {Uint8ClampedArray} The dst vector.
  */
-const getColor4b = ({_width: width, _height: height, _colorData: data}, x, y, dst) => {
+const getColor4b: GET_FUNCTION["COLOR_4B"] = (shilhouse:S3Silhouette, x:number, y:number, dst:Uint8ClampedArray) : Uint8ClampedArray=> {
     // Clamp coords to edge, matching GL_CLAMP_TO_EDGE.
     // (See github.com/LLK/scratch-render/blob/954cfff02b08069a082cbedd415c1fecd9b1e4fb/src/BitmapSkin.js#L88)
-    x = intMax(0, intMin(x, width - 1));
-    y = intMax(0, intMin(y, height - 1));
+    x = intMax(0, intMin(x, shilhouse.width - 1));
+    y = intMax(0, intMin(y, shilhouse.height - 1));
 
     // 0 if outside bounds, otherwise read from data.
-    if (x >= width || y >= height || x < 0 || y < 0) {
+    if (x >= shilhouse.width || y >= shilhouse.height || x < 0 || y < 0) {
         return dst.fill(0);
     }
-    const offset = ((y * width) + x) * 4;
+    const offset = ((y * shilhouse.width) + x) * 4;
     // premultiply alpha
-    const alpha = data[offset + 3] / 255;
-    dst[0] = data[offset] * alpha;
-    dst[1] = data[offset + 1] * alpha;
-    dst[2] = data[offset + 2] * alpha;
-    dst[3] = data[offset + 3];
+    const alpha = shilhouse.data[offset + 3] / 255;
+    dst[0] = shilhouse.data[offset] * alpha;
+    dst[1] = shilhouse.data[offset + 1] * alpha;
+    dst[2] = shilhouse.data[offset + 2] * alpha;
+    dst[3] = shilhouse.data[offset + 3];
     return dst;
 };
 
@@ -80,20 +82,34 @@ const getColor4b = ({_width: width, _height: height, _colorData: data}, x, y, ds
  * @param {Uint8ClampedArray} dst A color 4b space.
  * @return {Uint8ClampedArray} The dst vector.
  */
-const getPremultipliedColor4b = ({_width: width, _height: height, _colorData: data}, x, y, dst) => {
+const getPremultipliedColor4b = (shilhouse:S3Silhouette, x:number, y:number, dst:Uint8ClampedArray):Uint8ClampedArray => {
     // Clamp coords to edge, matching GL_CLAMP_TO_EDGE.
-    x = intMax(0, intMin(x, width - 1));
-    y = intMax(0, intMin(y, height - 1));
+    x = intMax(0, intMin(x, shilhouse.width - 1));
+    y = intMax(0, intMin(y, shilhouse.height - 1));
 
-    const offset = ((y * width) + x) * 4;
-    dst[0] = data[offset];
-    dst[1] = data[offset + 1];
-    dst[2] = data[offset + 2];
-    dst[3] = data[offset + 3];
+    const offset = ((y * shilhouse.width) + x) * 4;
+    dst[0] = shilhouse.data[offset];
+    dst[1] = shilhouse.data[offset + 1];
+    dst[2] = shilhouse.data[offset + 2];
+    dst[3] = shilhouse.data[offset + 3];
     return dst;
 };
 
-class S3Silhouette {
+export class S3Silhouette {
+    private _width:number;
+    private _height:number;
+    private _colorData:Uint8ClampedArray|null;
+    private _getColor: GET_FUNCTION["COLOR_4B"];
+    get width() {
+        return this._width;
+    }
+    get height() {
+        return this._height;
+    }
+    get data():Uint8ClampedArray{
+        if(this._colorData == undefined) throw 'color data undefined error';
+        return this._colorData;
+    }
     constructor () {
         /**
          * The width of the data representing the current skin data.
@@ -127,7 +143,8 @@ class S3Silhouette {
      * @param {boolean} isPremultiplied True if the source bitmap data comes premultiplied (e.g. from readPixels).
      * rendering can be queried from.
      */
-    update (bitmapData, isPremultiplied = false) {
+    update (bitmapData:ImageData|HTMLCanvasElement|HTMLImageElement, 
+                isPremultiplied:boolean = false) {
         let imageData;
         if (bitmapData instanceof ImageData) {
             // If handed ImageData directly, use it directly.
@@ -137,10 +154,11 @@ class S3Silhouette {
         } else {
             // Draw about anything else to our update canvas and poll image data
             // from that.
-            const canvas = Silhouette._updateCanvas();
+            const canvas = S3Silhouette._updateCanvas();
             const width = this._width = canvas.width = bitmapData.width;
             const height = this._height = canvas.height = bitmapData.height;
-            const ctx = canvas.getContext('2d');
+            const ctx:CanvasRenderingContext2D|null = canvas.getContext('2d');
+            if (!ctx) return;
 
             if (!(width && height)) {
                 return;
@@ -170,7 +188,7 @@ class S3Silhouette {
      * @param {Uint8ClampedArray} dst The memory buffer to store the value in. (4 bytes)
      * @returns {Uint8ClampedArray} dst
      */
-    colorAtNearest (vec, dst) {
+    colorAtNearest? (vec:number[], dst:Uint8ClampedArray) : Uint8ClampedArray{
         return this._getColor(
             this,
             Math.floor(vec[0] * (this._width - 1)),
@@ -186,7 +204,7 @@ class S3Silhouette {
      * @param {Uint8ClampedArray} dst The memory buffer to store the value in. (4 bytes)
      * @returns {Uint8ClampedArray} dst
      */
-    colorAtLinear (vec, dst) {
+    colorAtLinear? (vec:number[], dst:Uint8ClampedArray) : Uint8ClampedArray{
         const x = vec[0] * (this._width - 1);
         const y = vec[1] * (this._height - 1);
 
@@ -216,8 +234,8 @@ class S3Silhouette {
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} If the nearest pixel has an alpha value.
      */
-    isTouchingNearest (vec) {
-        if (!this._colorData) return;
+    isTouchingNearest (vec:number[]): boolean {
+        if (!this._colorData) return false;
         return getPoint(
             this,
             Math.floor(vec[0] * (this._width - 1)),
@@ -231,8 +249,8 @@ class S3Silhouette {
      * @param {twgl.v3} vec A texture coordinate.
      * @return {boolean} Any of the pixels have some alpha.
      */
-    isTouchingLinear (vec) {
-        if (!this._colorData) return;
+    isTouchingLinear (vec:number[]) :boolean {
+        if (!this._colorData) return false;
         const x = Math.floor(vec[0] * (this._width - 1));
         const y = Math.floor(vec[1] * (this._height - 1));
         return getPoint(this, x, y) > 0 ||
@@ -246,7 +264,7 @@ class S3Silhouette {
      * @private
      * @return {CanvasElement} A canvas to draw bitmap data to.
      */
-    static _updateCanvas () {
+    static _updateCanvas () : HTMLCanvasElement {
         if (typeof __SilhouetteUpdateCanvas === 'undefined') {
             __SilhouetteUpdateCanvas = document.createElement('canvas');
         }

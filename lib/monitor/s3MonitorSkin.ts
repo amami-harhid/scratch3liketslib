@@ -1,11 +1,12 @@
-const Canvas = require('../canvas');
-const EventEmitter = require('events').EventEmitter;
-const Render = require('../render');
+import { Canvas } from 'lib/canvas';
+import { EventEmitter } from 'events';
+import { Render } from 'lib/render';
 import {S3CanvasMeasurementProvider} from './s3-canvas-measurement-provider';
-const S3RenderConstants = require('./s3RenderConstants');
-const S3Silhouette = require('./s3Silhouette');
-const S3TextWrapper = require('./s3-text-wrapper');
-const twgl = require('twgl.js');
+import { S3Renderer } from 'libTypes/engine/S3Renderer';
+import {MonitorRenderingConstants} from './s3RenderConstants';
+import { S3Silhouette } from './s3Silhouette';
+import { S3TextWrapper } from './s3-text-wrapper';
+import * as twgl from 'twgl.js';
 const MonitorStyle = {
     MAX_LINE_WIDTH: 480,  // stage width
     PADDING_VALUE_VIRTICAL: 5, // Padding around the value text area
@@ -33,7 +34,26 @@ const MonitorStyle = {
 
 };
 export class S3MonitorSkin extends EventEmitter {
-
+    private _id: number;
+    private _renderer: S3Renderer;
+    private _size: number[];
+    private _renderedScale: number;
+    private _lines: string[];
+    private _title: string;
+    private _textAreaSize: {width: number, height: number};
+    private _textDirty: boolean;
+    private _textureDirty: boolean;
+    private _rotationCenter: twgl.v3.Vec3;
+    private _texture:WebGLTexture|null;
+    private _uniforms : {
+        u_skinSize: number[],
+        u_skin: WebGLTexture|null,
+    };
+    private _silhouette: S3Silhouette;
+    private _x: number;
+    private _y: number;
+    private _visible: boolean;
+    private _dropping: boolean;
     /**
      * Create a S3Skin, which stores and/or generates textures for use in rendering.
      * @param {int} id - The unique ID for this S3Skin.
@@ -41,7 +61,7 @@ export class S3MonitorSkin extends EventEmitter {
      * @param {string} title - monitor title
      * @constructor
      */
-    constructor (id, renderer, title, x=0, y=0) {
+    constructor (id:number, renderer:S3Renderer, title:string, x:number=0, y:number=0) {
         super();
         /** @type {int} */
         this._id = id;
@@ -130,7 +150,7 @@ export class S3MonitorSkin extends EventEmitter {
             this._texture = null;
         }
         this._canvas = null;
-        this._id = S3RenderConstants.ID_NONE;
+        this._id = MonitorRenderingConstants.ID_NONE;
     }
     /**
      * @return {int} the unique ID for this Skin.

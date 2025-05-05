@@ -103,7 +103,7 @@ export class Sprite extends Entity {
         });
     }
     */
-    async $cloneAndWait(options = {}){
+    async $cloneAndWait(options = {}): Promise<void>{
         await this.$clone(options);
     }
     async $clone(options = {}) {

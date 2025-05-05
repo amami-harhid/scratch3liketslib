@@ -221,9 +221,8 @@ export class Costumes {
             const scaleObj = { scale: [ this._scale.x, this._scale.y ] };
             const positionObj = { position: [this._position.x, this._position.y] };
             Object.assign( properties, skinObj, directionObj, scaleObj, positionObj, effect );
-            this.render.renderer.updateDrawableProperties( drawableID, properties );    
+            this.render.renderer.updateDrawableProperties( drawableID, properties );
         }
-        throw 'unable to execute updateDrawableProperties';
     }
     isSvgSkin( skinId: number ) {
         if(this.render && this.render.renderer){

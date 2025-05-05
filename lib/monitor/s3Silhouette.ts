@@ -273,5 +273,3 @@ export class S3Silhouette {
         return __SilhouetteUpdateCanvas;
     }
 }
-
-module.exports = S3Silhouette;

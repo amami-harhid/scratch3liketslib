@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { Render } from '../render';
 import {S3CanvasMeasurementProvider} from './s3CanvasMeasurementProvider';
 import { S3Renderer } from '../../libTypes/render/S3Renderer';
-import {MonitorRenderingConstants} from './s3RenderConstants';
+import { MonitorRenderingConstants } from './s3RenderConstants';
 import { S3Silhouette } from './s3Silhouette';
 import * as twgl from 'twgl.js';
 import { S3Drawable } from '../../libTypes/render/S3Drowable';
@@ -63,7 +63,7 @@ export class S3MonitorSkin extends EventEmitter {
     private _visible: boolean;
     private _dropping: boolean;
     private _canvas: HTMLCanvasElement|null;
-    private _ctx: CanvasRenderingContext2D|null;
+    private _ctx: CanvasRenderingContext2D;
     private _measurementProvider: S3CanvasMeasurementProvider|null;
     private _text: string;
     public titleLineWidth:number;
@@ -131,18 +131,19 @@ export class S3MonitorSkin extends EventEmitter {
         this._x = x;
         this._y = y;
         this._visible = true;
-        this.createCanvas();
-        this._restyleCanvas();
+        this._canvas = null;
+        this._measurementProvider = null;
 
         /** adding */
         this._dropping = false;
-        this._canvas = null;
-        this._ctx = null;
-        this._measurementProvider = null;
         this._text = '';
         this.titleLineWidth = -1;
         this.valueLineWidth = -1;
         this.actualValueLineWidth = -1;
+
+        this._ctx = this.createCanvas();
+        this._restyleCanvas();
+
     }
     get dropping( ) {
         return this._dropping;
@@ -150,13 +151,13 @@ export class S3MonitorSkin extends EventEmitter {
     set dropping( _dropping ) {
         this._dropping = _dropping;
     }
-    createCanvas(){
+    createCanvas(): CanvasRenderingContext2D{
         /** @type {HTMLCanvasElement} */
         this._canvas = document.createElement('canvas');
-        this._ctx = this._canvas.getContext('2d', { willReadFrequently: true });
-        if(this._ctx == undefined) throw 'Unable to get ctx';
-        this._measurementProvider = new S3CanvasMeasurementProvider(this._ctx);
-
+        const ctx = this._canvas.getContext('2d', { willReadFrequently: true });
+        if(ctx == undefined) throw 'Unable to get ctx';
+        this._measurementProvider = new S3CanvasMeasurementProvider(ctx);
+        return ctx;
     }
     getDefaultHeight(){
         const paddedHeight = (MonitorStyle.FONT_HEIGHT_RATIO*MonitorStyle.LINE_HEIGHT) 
@@ -236,7 +237,6 @@ export class S3MonitorSkin extends EventEmitter {
 
     }
     private get ctx() :CanvasRenderingContext2D{
-        if(this._ctx == undefined) throw 'ctx null error';
         return this._ctx;
     }
     private get measurementProvider() :S3CanvasMeasurementProvider{
@@ -255,8 +255,8 @@ export class S3MonitorSkin extends EventEmitter {
         if (this._textureDirty || this._renderedScale !== requestedScale) {
             this._renderTextMonitor(requestedScale);
             this._textureDirty = false;
-
-            const textureData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            // @ts-ignore ( this._ctx is null )
+            const textureData = this._ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
             const gl = this._renderer.gl;
 
@@ -315,6 +315,7 @@ export class S3MonitorSkin extends EventEmitter {
         return this._text;
     }
     _restyleCanvas () :void{
+        // @ts-ignore ( this.ctx is null )
         this.ctx.font = `${MonitorStyle.FONT_SIZE}px ${MonitorStyle.FONT}, sans-serif`;
     }
     /**
@@ -353,6 +354,7 @@ export class S3MonitorSkin extends EventEmitter {
     _renderTextMonitor (scale) {
         const _scale = scale;
         const ctx = this.ctx;
+        if( ctx == undefined ) return;
         if (this._textDirty) {
             this._reflowLines();
         }

@@ -186,6 +186,7 @@ export class Bubble{
     }
     destroyBubble() {
        if(this.renderer && this.isBubbleActive()) {
+            console.log(this.bubbleState);
             this.renderer.destroyDrawable( this.bubbleState.drawableID, StageLayering.SPRITE_LAYER);
             this.renderer.destroySkin( this.bubbleState.skinId )
             this._createBubbleState();    

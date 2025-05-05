@@ -1,8 +1,7 @@
 import { Canvas } from "./canvas";
 import { Element } from "./element";
 import { playGround } from "./playGround";
-const ScratchRenderer = require('scratch-render');
-//import { ScratchRenderer } from 'scratch-render/dist/node/scratch-render.js';
+import { ScratchRender } from 'scratch-render/dist/node/scratch-render.js';
 import { StageLayering } from "./stageLayering";
 import { S3Renderer } from "../libTypes/render/S3Renderer";
 export class Render {
@@ -32,6 +31,7 @@ export class Render {
     public stageHeight: number;
     private canvas: HTMLElement|null;
     constructor(layerGroups = StageLayering.LAYER_GROUPS) {
+        console.log(ScratchRender);
         this.layerGroups = layerGroups;
         this.stageWidth = 0;
         this.stageHeight = 0;
@@ -62,7 +62,7 @@ export class Render {
     }
     createRenderer (w = Render.W , h = Render.H ) {
         this.canvas = Element.canvas;
-        this._renderer = new ScratchRenderer(this.canvas);
+        this._renderer = new ScratchRender(this.canvas);
         if(this._renderer){
             this._renderer.setLayerGroupOrdering(this.layerGroups);
             this.stageResize(w,h);    

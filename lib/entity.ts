@@ -42,7 +42,7 @@ export class Entity extends EventEmitter {
     public drawableID: string;
     public id: string;
     public canvas: HTMLElement | null;
-    public flag: HTMLElement;
+    public flag: HTMLElement | null;
     protected $_position: {x:number, y:number};
     protected $_prev_position : {x:number, y:number};
     protected $_scale: {w:number,h:number};
@@ -67,7 +67,7 @@ export class Entity extends EventEmitter {
         this.drawableID = this.render.createDrawable(this.layer);
         this.id = this._generateUUID();
         this.canvas = Canvas.canvas;
-        this.flag = playGround.flag;
+        this.flag = null;//playGround.flag;
         this.$_position = {x:0, y:0}; // 意味なし
         this.$_scale = {w:100,h:100}; // 意味なし
         this.$_direction = 90; // 意味なし

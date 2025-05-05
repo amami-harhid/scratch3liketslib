@@ -1,58 +1,71 @@
-import {Canvas} from './canvas';
-import {Loop, Controls} from './controls';
+import { Canvas } from './canvas';
+import { Controls, Loop } from './controls';
 import { Element } from './element';
-const EntityProxyExt = require('./util/entityProxyExt')
-const Env = require('./env');
-const EventEmitter = require('events').EventEmitter;
-const FunctionChecker = require('./util/functionChecker');
+import { EntityProxyExt } from './util/entityProxyExt';
+import { Env } from './env';
+import { EventEmitter } from 'events';
+import { FunctionChecker } from './util/functionChecker';
 import { libs } from './libs';
-const MathUtils = require('./math-utils');
+import { MathUtils } from './math-utils';
 import { playGround } from './playGround';
-//const Rewrite = require('./rewrite');
-const Sounds = require('./sounds');
+import { Render } from './render';
+import { Sounds } from './sounds';
 import { Speech } from './speech/text2Speech';
 import { threads } from './threads';
-const {ImageEffective, SoundOption, RotationStyle} = require('./types');
-const Utils = require('./utils');
-//const { default: playGround } = require('./playGround');
+import { Utils } from './utils';
 
+import { ImageEffective, SoundOption, RotationStyle } from './entityConstant';
+//const { default: playGround } = require('./playGround');
+import type { S3RendererEffects } from '../libTypes/render/S3RendererEffects';
 declare type FUNC_ARR =  {eventId:string,funcArr:{func:CallableFunction,threadId:string,target:Entity}[]}
 declare type EVENT_F = (e: MouseEvent, counter:number) => Promise<void>;
-declare type ENTITY_OPTIONS = {
+export declare type ENTITY_OPTIONS = {
     position?: {x:number, y:number},
     scale?: {w:number, h:number},
     direction?: number,
+    effect?:S3RendererEffects,
 };
 export class Entity extends EventEmitter {
     static clickFirstRegist = true;
     static eventFuncArray:EVENT_F[] = [];
     static broadcastReceivedFuncArr:FUNC_ARR[] = [];
-    public id:string;
     static get EmitIdMovePromise () {
         return '_MovePromise_';
     }
     get SOUND_FORCE_STOP (){
         return "sound_force_stop";
     }
-    constructor (name:string, layer, options:ENTITY_OPTIONS = {} ){
+    private pace : number;
+    protected render: Render;
+    public name: string;
+    private layer: string;
+    public drawableID: string;
+    public id: string;
+    public canvas: HTMLElement | null;
+    public flag: HTMLElement;
+    protected $_position: {x:number, y:number};
+    protected $_prev_position : {x:number, y:number};
+    protected $_scale: {w:number,h:number};
+    protected $_prev_scale: {w:number,h:number};
+    protected $_direction: number;
+    protected $_prev_direction: number;
+    protected _visible: boolean;
+    private sounds: Sounds|null;
+    private importAllDone: boolean[];
+    private importIdx: number;
+    protected _effect: S3RendererEffects;
+    public life: number;
+    protected _isAlive: boolean;
+    private modules?: Map<string, Promise<any>[]>;
+    private _timer: number;
+    constructor (name:string, layer:string, options:ENTITY_OPTIONS = {} ){
         super();
         this.pace = Env.pace;
         this.render = playGround.render;
         this.name = name;
         this.layer = layer;
         this.drawableID = this.render.createDrawable(this.layer);
-        Entity.messageListeners = [];
         this.id = this._generateUUID();
-        // evented の配列はまるっと使用されていないみたい。
-        this.evented = [
-            'whenFlag',
-            'whenLoaded',     // <== これの実装はいらない。
-            'whenClicked',
-            'whenKeyPressed', // <== これ必要そうだけど実装していない。
-            'whenEvent',
-            'whenReceiveMessage',
-            'whenCloned'
-          ];
         this.canvas = Canvas.canvas;
         this.flag = playGround.flag;
         this.$_position = {x:0, y:0}; // 意味なし
@@ -60,11 +73,11 @@ export class Entity extends EventEmitter {
         this.$_direction = 90; // 意味なし
         this._visible = true;
         this.sounds = null;
-        this.sound = null;
+        //this.sound = null;
         this.importAllDone = [];
         this.importIdx = -1;
 
-        const _effect = ('effect' in options )? options.effect: {};
+        const _effect: S3RendererEffects = (options.effect)? options.effect: {};
         this._effect = {};
         this.setEffectsEachProperties(_effect);
         this.$_position = (options.position)? {x: options.position.x, y: options.position.y}:{x:0, y:0};
@@ -72,35 +85,34 @@ export class Entity extends EventEmitter {
         this.$_direction = (options.direction)? options.direction : 90;
         this.$_prev_direction = this.$_direction;
         this.$_scale = (options.scale)? {w: options.scale.w, h: options.scale.h} : {w:100, h:100};
-        this.$_prev_scale = {};
+        this.$_prev_scale = {w:0, h:0};
         this.$_prev_scale.w = this.$_scale.w;
         this.$_prev_scale.h = this.$_scale.h;
 
         this.life = Infinity;
-        this.modules = new Map();
+        this.modules = new Map<string,Promise<any>[]>();
         Entity.broadcastReceivedFuncArr = Entity.broadcastReceivedFuncArr || [];
         this._isAlive = true;
         // タイマー用
         this._timer = performance.now();
     }
-    isAlive(){
+    isAlive() : boolean{
         // スプライトの場合はオーバーライドしている
         return true;
     }
-    isSprite() {
+    isSprite() :boolean {
         return true;
     }
-    $delete () {
-        this.modules = null;
+    $delete () :void {
         delete this.modules;
     }
-    get effect() {
+    get effect() :S3RendererEffects {
         return this._effect;
     }
-    set effect(_effect) {
+    set effect(_effect: S3RendererEffects) {
         this.setEffectsEachProperties(_effect);
     }
-    $changeSizeBy(changeW, changeH){
+    $changeSizeBy(changeW:number, changeH:number): void{
         if(typeof changeW == 'number' ){
             let _w = changeW;
             let _h = changeH;
@@ -111,7 +123,7 @@ export class Entity extends EventEmitter {
             const h = this.$_scale.h + _h; 
             this.$setScale(w, h);    
         }else{
-            const obj = changeW;
+            const obj = changeW as {w:number, h:number};
             let _w = obj.w;
             let _h = obj.h;
             const w = this.$_scale.w + _w;
@@ -163,7 +175,7 @@ export class Entity extends EventEmitter {
         }
 
     }
-    setEffectsEachProperties(_effect) {
+    setEffectsEachProperties(_effect: S3RendererEffects) {
         if(ImageEffective.COLOR in _effect ){
             this._effect.color = _effect.color;
         }
@@ -250,6 +262,7 @@ export class Entity extends EventEmitter {
         if ( this.sounds == null ) this.sounds = new Sounds(this);
         const me = this;
         return new Promise(async resolve => {
+            if(this.sounds == undefined) throw 'sounds undefined error';
             await this.sounds.setSound(name, soundData, options);
             resolve(me);
         })
@@ -263,10 +276,11 @@ export class Entity extends EventEmitter {
         await this.sounds.loadSound(name,soundUrl, options);
         this.importAllDone[_importIdx] = true;
     }
-    $soundSwitch(sound){
+    $soundSwitch(sound: {name: string}): void{
+        if(this.sounds == undefined) throw 'sounds undefined error';
+        if(this.sounds.soundPlayer == undefined) throw 'sounds.soundPlayer undefined error';
         const name = sound.name;
-        if ( this.sounds == null ) return;
-        if(this.sounds.soundPlayer.name==name) return;
+        if(this.sounds.soundPlayer.name===name) return;
         const keys = this.sounds.getSoundKeys();
         if(keys.includes(name)){
             this.sounds.switch(name);
@@ -274,20 +288,20 @@ export class Entity extends EventEmitter {
             throw '指定したサウンドは定義されていません('+name+')';
         }
     }
-    $nextSound() {
+    $nextSound(): void{
         if ( this.sounds == null ) return;
         this.$soundStop();    
         this.sounds.nextSound();
     }
-    $soundPlay(name) {
-        if ( this.sounds == null ) return;
+    $soundPlay(name: string): void {
+        if(this.sounds == undefined) throw 'sounds undefined error';
         if( name ) {
             this.$soundSwitch({name:name});
         }
 
         this.sounds.play();
     }
-    async $setOption(key, value) {
+    async $setOption(key: string, value: number) : Promise<void>{
         if( key == SoundOption.VOLUME ){
             this.$setSoundVolume(value);
         }else if(key == SoundOption.PITCH ){
@@ -299,26 +313,27 @@ export class Entity extends EventEmitter {
         // FPS分待つことで解消させる
         await libs.wait(1000/33*2);
     }
-    async $clearSoundEffect(){
+    async $clearSoundEffect(): Promise<void>{
         this.$setSoundVolume(100);
         this.$setSoundPitch(0);
         await libs.wait(1000/33*2);
     }
-    $pitchAudio2Scratch(pitch){
+    $pitchAudio2Scratch(pitch:number): number{
         if(12.5 <= pitch && pitch <= 800){
             const scratchPitch = 120 * Math.log2(pitch/100);
             return scratchPitch;
         }
         return 100;
     }
-    $pitchScratch2Audio(pitch){
+    $pitchScratch2Audio(pitch: number): number{
         if(-360 <= pitch && pitch <= 360) {
             const audioPitch = 100 * (2**(pitch/120));
             return audioPitch;
         }
         return 0;
     }
-    async $changeOptionValue(key, value){
+    async $changeOptionValue(key: string, value: number): Promise<void>{
+        if(this.sounds == undefined) throw 'sounds undefined error';
         if( key == SoundOption.VOLUME ){
             const volume = this.sounds.volume;
             this.$setSoundVolume(volume + value);
@@ -334,37 +349,39 @@ export class Entity extends EventEmitter {
         // FPS分待つことで解消させる
         await libs.wait(1000/33*2);
     }
-    $setSoundVolume(volume) {
+    $setSoundVolume(volume: number): void{
         if ( this.sounds == null ) return;
         this.sounds.volume = volume;
     }
-    $getSoundVolume() {
+    $getSoundVolume() :number {
+        if(this.sounds == undefined) throw 'Sounds undefined error';
         return this.sounds.volume;
     }
     // setSoundVolumeByName(name, volume) {
     //     if ( this.sounds == null ) return;
     //     this.sounds.volume = volume;
     // }
-    $getSoundPitch() {
+    $getSoundPitch(): number {
+        if(this.sounds == undefined) throw 'sounds undefined error';
         return this.sounds.pitch;
     }
-    $setSoundPitch(pitch) {
-        if ( this.sounds == null ) return;
+    $setSoundPitch(pitch: number): void {
+        if(this.sounds == undefined) throw 'sounds undefined error';
         const audioPitch = this.$pitchScratch2Audio(pitch);
         this.sounds.pitch = audioPitch/100;
     }
-    $soundStop() {
+    $soundStop(): void {
         if ( this.sounds == null ) return;
         this.sounds.stop();
     }
-    $soundStopImmediately() {
+    $soundStopImmediately(): void {
         if ( this.sounds == null ) return;
         this.sounds.stopImmediately();
     }
-    $speechStopImmediately() {
+    $speechStopImmediately(): void {
         this.emit(this.SOUND_FORCE_STOP); // ---> スピーチを停止する Soundの中で。
     }
-    async $startSoundUntilDone(name) {
+    async $startSoundUntilDone(name: string): Promise<void> {
         if ( this.sounds ) {
             if(name){
                 this.$soundSwitch({name:name});
@@ -373,7 +390,7 @@ export class Entity extends EventEmitter {
         }
         return;
     }
-    $setPosition(x, y) {
+    $setPosition(x: number|{x:number, y:number}, y: number): void {
         if(typeof x == 'number'){
             this.$_position.x = x;
             this.$_position.y = y;    
@@ -384,7 +401,7 @@ export class Entity extends EventEmitter {
         }
     }
 
-    $setScale(w, h) {
+    $setScale(w: number|{w:number,h:number}, h?: number): void {
         if(typeof w == 'number'){
             this.$_scale.w = w;
             if( h == undefined) {
@@ -400,28 +417,28 @@ export class Entity extends EventEmitter {
 
         }
     }
-    _directionChange( direction ) {
+    _directionChange( direction: number ): number {
         if( direction > 180 ) {
             return direction - 360;
         }
         return direction;    
     }
-    $setDirection(direction) {
+    $setDirection(direction: number): void {
         const _direction = this._directionChange(direction);
         this.$_direction = _direction;
     }
 
-    $turnRight( value ) {
+    $turnRight( value: number ): void {
         const _direction = this.$_direction + value;
         this.$setDirection( _direction )
     }
 
-    $turnLeft( value ) {
+    $turnLeft( value: number ): void {
         const _direction = this.$_direction - value;
         this.$setDirection( _direction )
     }
 
-    _generateUUID () {
+    _generateUUID (): string {
         return Utils.generateUUID();
     }
 
@@ -441,20 +458,20 @@ export class Entity extends EventEmitter {
 //        return t;
 //    }
 
-    async $waitSeconds (seconds) {
+    async $waitSeconds (seconds: number): Promise<void> {
         await Controls.waitSeconds(seconds);
     }
-    async $waitUntil(condition){
+    async $waitUntil(condition: CallableFunction): Promise<void>{
         await Controls.waitUntil(condition);
     }
-    async $waitWhile(condition){
+    async $waitWhile(condition: CallableFunction): Promise<void>{
         await Controls.waitWhile(condition);
     }
  
-    $isNotMouseTouching() {
-        return !(this.isMouseTouching());
+    $isNotMouseTouching(): boolean {
+        return !(this.$isMouseTouching());
     }
-    $isMouseTouching() {
+    $isMouseTouching(): boolean {
         if(playGround.render){
             const mouseX = playGround.stage.mouse.x +1; // +1 は暫定、理由不明
             const mouseY = playGround.stage.mouse.y +1;
@@ -469,7 +486,7 @@ export class Entity extends EventEmitter {
 
     }
 
-    $isTouchingTargetToTarget(src:Entity, targets:Entity|Entity[]) {
+    $isTouchingTargetToTarget(src:Entity, targets:Entity|Entity[]): boolean {
         const targetIds:string[] = [];
         if(Array.isArray(targets)){
             for(const _t of targets) {
@@ -493,20 +510,20 @@ export class Entity extends EventEmitter {
         }
         return false;
     }
-    $ifTouchingTarget(target) {
+    $ifTouchingTarget(target: Entity): boolean {
         const touching = this.$isTouchingTargetToTarget(this,[target]);
         return touching;
     }
-    $ifTouchingMultiTargets(targets){
+    $ifTouchingMultiTargets(targets: Entity[]): boolean{
         if(Array.isArray(targets)){
             for(const t of targets){
-                const touching = this.$ifTouchingTargets(this,t);
+                const touching = this.$ifTouchingTarget(t);
                 return touching;
             }
         }
         return false;
     }
-    $getTouchingTarget(targets: Entity[]) {
+    $getTouchingTarget(targets: Entity[]): Entity[] {
         const src = this;
         const touchingTragets:Entity[] = []
         if(Array.isArray(targets)){
@@ -527,7 +544,7 @@ export class Entity extends EventEmitter {
         return touchingTragets;
     }
 
-    isTouchingTarget(targets) {
+    isTouchingTarget(targets: Entity[]): boolean {
         const src = this;
         const touching = this.$isTouchingTargetToTarget(src,targets);
         return touching;
@@ -537,14 +554,13 @@ export class Entity extends EventEmitter {
      * @param {string} targetRgb #始まりのカラー文字列
      * @returns {Promise.<boolean>} 色にタッチしたとき true
      */
-    async $isTouchingColor(targetRgb){
+    async $isTouchingColor(targetRgb: string): Promise<boolean> {
         if(this.render && this.render.renderer && targetRgb &&
             typeof targetRgb === 'string' && targetRgb.substring(0, 1) === '#'
         ){
             const _renderer = this.render.renderer;
             const _targetRgb = libs.Cast.toRgbColorObject(targetRgb);
-            return await _renderer.isTouchingColor(this.drawableID, 
-                            [_targetRgb.r, _targetRgb.g, _targetRgb.b]);
+            return await _renderer.isTouchingColor(this.drawableID, _targetRgb);
         }
         return false;
     }
@@ -554,7 +570,7 @@ export class Entity extends EventEmitter {
      * @param {Array.<number>} maskRgb 
      * @returns 
      */
-    async $colorIsTouchingColor(targetRgb, maskRgb) {
+    async $colorIsTouchingColor(targetRgb: string, maskRgb: string): Promise<boolean> {
         if(this.render && this.render.renderer && 
             targetRgb && typeof targetRgb === 'string' && targetRgb.substring(0, 1) === '#' &&
             maskRgb && typeof maskRgb === 'string' && maskRgb.substring(0, 1) === '#'
@@ -563,32 +579,34 @@ export class Entity extends EventEmitter {
             const _targetRgb = libs.Cast.toRgbColorObject(targetRgb);
             const _maskRgb = libs.Cast.toRgbColorObject(maskRgb);
             return await _renderer.isTouchingColor(this.drawableID, 
-                                    [_targetRgb.r,_targetRgb.g,_targetRgb.b], 
-                                    [_maskRgb.r, _maskRgb.g, _maskRgb.b]);
+                                    _targetRgb, 
+                                    _maskRgb);
         }
         return false;
     }
 
-    $broadcast(messageId, ...args ) {
+    $broadcast(messageId: string, ...args: any[] ) {
         const runtime = playGround.runtime;
         if(runtime){
             const eventId = `message_${messageId}`;
+            if(this.modules == undefined) this.modules = new Map<string,Promise<any>[]>();
             this.modules.set(eventId, []);
             const sendTargets = [];
             runtime.emit(eventId, this.modules, sendTargets, ...args);    
         }
     }
-    async $broadcastAndWait(messageId, ...args ) : Promise<any>{
+    async $broadcastAndWait(messageId:string, ...args:any ) : Promise<any>{
         const wait = libs.wait;
         const runtime = playGround.runtime;
         if(runtime){
             const eventId = `message_${messageId}`;
+            if(this.modules == undefined) this.modules = new Map<string,Promise<any>[]>();
             this.modules.set(eventId, []);
             const sendTarges = [];
             runtime.emit(eventId, this.modules, sendTarges, ...args);
             await wait(10);
             const promises = this.modules.get(eventId);
-            if(promises.length > 0) {
+            if(promises && promises.length > 0) {
                 await Promise.all(promises);
                 return;
             }    
@@ -933,7 +951,7 @@ export class Entity extends EventEmitter {
     /**
      * @abstract
      */
-    $setRotationStyle () {
+    $setRotationStyle ( style: RotationStyle) {
         // Spriteクラスで定義する
     }
     /**
@@ -957,7 +975,10 @@ export class Entity extends EventEmitter {
             throw "イベントで宣言する関数は async をつけてください。";
         }
         const _entity = entity;
+
+        // @ts-ignore (proxy properties undefined error)
         const threadId = _entity.threadId;
+
         const obj = threads.createObj();
         obj['entityId'] = _entity.id + addId;
         obj.threadId = threadId; //this.id;
@@ -1010,7 +1031,10 @@ export class Entity extends EventEmitter {
         }
 
         const _entity = entity;
+
+        // @ts-ignore (proxy properties undefined error)
         const threadId = _entity.threadId;
+
         const obj = threads.createObj();
         obj.entityId = _entity.id;
         obj.threadId = threadId; //this.id;

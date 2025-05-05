@@ -1,49 +1,66 @@
-const Bubble = require('./bubble');
-const Entity = require('./entity');
-const Env = require('./env');
-const Libs = require('./libs');
-//const {ImageEffective, SoundOption, RotationStyle} = require('./types');
-const MathUtils = require('./math-utils');
-const PlayGround = require('./playGround');
-const QuestionBoxElement = require('./io/questionBoxElement');
-const StageLayering = require('./stageLayering');
-const Utils = require('./utils');
+import { SPEAK_PROPERTY, Bubble } from "./bubble";
+import { Costumes } from "./costumes";
+import { Entity } from "./entity";
+import { Env } from "./env";
+import { libs } from "./libs";
+import { MathUtils } from "./math-utils";
+import { playGround } from "./playGround";
+import { QuestionBoxElement } from "./io/questionBoxElement";
+import { Stage } from "./stage";
+import { StageLayering } from "./stageLayering";
+import { Utils } from "./utils";
+import { RotationStyle } from './entityConstant';
+import { Backdrops } from "./backdrops";
 export class Sprite extends Entity {
-
+    private stage: Stage;
+    private bubble?: Bubble;
+    private costumes?: Costumes;
+    public  skinId: number;
+    public  skinIdx: number;
+    public  z: number;
+    public  clones?: Sprite[];
+    public  isClone: boolean;
+    public originalSprite?: Sprite|null;
+    private imageDatas?: {name:string, data:any}[];
+    private soundDatas?: {name:string, data:any}[];
+    private touchingEdge: boolean;
+    private bubbleDrawableID: string;
+    private _bubbleTimeout: NodeJS.Timeout|undefined;
     constructor(name, options = {}) {
         if(typeof name != "string") throw "第一パラメータはスプライトの名前が必要"
         super(name, StageLayering.SPRITE_LAYER, options);
-        const stage = PlayGround.default.stage;
+        const stage = playGround.stage;
         this.stage = stage;
         this.bubble = new Bubble(this);
-        this.costumes = new Libs.default.Costumes();
-        this.skinId = null;
+        this.costumes = new Costumes();
+        this.skinId = -1;
         this.skinIdx = -1;
         this.z = -1;
         this.clones = [];
-        this.isClone;
-        this.originalSprite;
+        this.isClone = false
+        this.originalSprite = null;
         this.imageDatas = [];
         this.soundDatas = [];
         this.touchingEdge = false;
-        this.bubbleDrawableID = null;
-        this._isAlive = true;
+        this.bubbleDrawableID = '';
+        this._bubbleTimeout;
+        //this._isAlive = true;
         stage.addSprite(this);
 
     }
     $delete () {
         super.$delete();
-        this.bubble = null;
+        //this.bubble = null;
         delete this.bubble;
-        this.costumes = null;
+        //this.costumes = null;
         delete this.costumes;
-        this.clones = null;
+        //this.clones = null;
         delete this.clones;
-        this.originalSprite = null;
+        //this.originalSprite = null;
         delete this.originalSprite;
-        this.imageDatas = null;
+        //this.imageDatas = null;
         delete this.imageDatas;
-        this.soundDatas = null;
+        //this.soundDatas = null;
         delete this.soundDatas;
         this._isAlive = false;
     }
@@ -62,8 +79,8 @@ export class Sprite extends Entity {
         }finally{
             this._isAlive = false;
         }
-        
-        this.costumes.destroyAllSkin();
+        if(this.costumes)
+            this.costumes.destroyAllSkin();
 
         this.$delete();
     }
@@ -91,6 +108,7 @@ export class Sprite extends Entity {
     }
     async $clone(options = {}) {
         if(this.isClone == undefined){
+            if(this.clones == undefined) this.clones = [];
             const newName = `${this.name}_${this.clones.length+1}`;
             // クローン時にエフェクトを引き継ぐ。
             // クローン別にエフェクトを設定したいときは
@@ -121,27 +139,34 @@ export class Sprite extends Entity {
             newSprite.$goBackwardLayers(1)
             //const _visible = 
             newSprite.$setVisible( false );
-            this.clones.push(newSprite);
+            if(this.clones)
+                this.clones.push(newSprite);
             newSprite.isClone = true;
-            for(const d of this.imageDatas) {
-                // svg image の場合、createSVGSkin の中で非同期になることに注意すること
-                await newSprite.$addImage(d); 
+            if(this.imageDatas){
+                for(const d of this.imageDatas) {
+                    // svg image の場合、createSVGSkin の中で非同期になることに注意すること
+                    await newSprite.$addImage(d); 
+                }    
             }
-            let _name = this.costumes.currentSkinName();
-            if( _name != null && newSprite.costumes){
-                newSprite.costumes.switchCostumeByName(_name);
+            if(this.costumes){
+                let _name = this.costumes.currentSkinName();
+                if( _name != null && newSprite.costumes){
+                    newSprite.costumes.switchCostumeByName(_name);
+                }    
             }
-            for(const d of this.soundDatas) {
-                const _soundData:{name?:string, data?:any} = {};
-                _soundData.name = d.name;
-                _soundData.data = d.data;
-                //const _options = d.options;
-                await newSprite.$addSound(_soundData);
-                // options引き継ぐ
-                const _vol = this.$getSoundVolume();
-                const _pitch = this.$getSoundPitch();
-                newSprite.$setSoundVolume( _vol );
-                newSprite.$setSoundPitch( _pitch );       
+            if(this.soundDatas){
+                for(const d of this.soundDatas) {
+                    const _soundData:{name?:string, data?:any} = {};
+                    _soundData.name = d.name;
+                    _soundData.data = d.data;
+                    //const _options = d.options;
+                    await newSprite.$addSound(_soundData);
+                    // options引き継ぐ
+                    const _vol = this.$getSoundVolume();
+                    const _pitch = this.$getSoundPitch();
+                    newSprite.$setSoundVolume( _vol );
+                    newSprite.$setSoundPitch( _pitch );       
+                }    
             }
             newSprite.update(); // update() は不要かもしれない。
             newSprite.originalSprite = this;
@@ -151,7 +176,7 @@ export class Sprite extends Entity {
             // ここで emit 
             // target( = EventEmitter ) を作る。target は renderer を操作するメソッドを持つ。
             // rendererを操作する処理は emit で行う。
-            const runtime = PlayGround.default.runtime;
+            const runtime = playGround.runtime;
             const eventId = `whenClone_${this.name}`;
             runtime.emit(eventId, newSprite);
             return newSprite;
@@ -172,7 +197,7 @@ export class Sprite extends Entity {
         target.$_prev_direction = target.$_direction;
 
     }
-    _goLayers(nLayers){
+    _goLayers(nLayers: number){
         if (this.render.renderer) {
             this.render.renderer.setDrawableOrder(this.drawableID, nLayers, StageLayering.SPRITE_LAYER, true);
         }
@@ -209,49 +234,57 @@ export class Sprite extends Entity {
         this.$setXY( this.$_position.x + dx, this.$_position.y + dy );
     
     }
-    $setScale(w, h) {
+    $setScale(w: number|{w:number, h:number}, h: number) {
+        
         if(Utils.isNumber(w)){
             super.$setScale(w,h);
-            this.bubble.setScale(w, h);
+            if(this.bubble){
+                const _w = w as number;
+                this.bubble.setScale(_w, h);
+            }
         }else{
-            const obj = w;
+            const obj = w as {w:number, h:number};
             super.$setScale(obj.w,obj.h);
-            this.bubble.setScale(obj.w, obj.h);
+            if(this.bubble)
+                this.bubble.setScale(obj.w, obj.h);
         }
         this.update();
     }
-    get x(){
+    get x(): number{
         return this.$_position.x;
     }
-    set x( x ){
+    set x( x: number ){
         this.$setX(x);
     }
-    get y(){
+    get y(): number{
         return this.$_position.y;
     }
-    set y( y ){
+    set y( y: number ){
         this.$setY(y);
     }
-    $goToXY( x, y ) {
+    $goToXY( x: number|{x: number, y: number}, y: number ) {
         if(Utils.isNumber(x)) {
             if ( !Utils.isNumber(y)) {
                 return;
             }
-            this.$setXY( x, y );    
+            const _x = x as number;
+            this.$setXY( _x, y );    
         }else{
-            const obj = x;
+            const obj = x as {x: number, y: number};
             this.$setXY( obj.x, obj.y );    
         }
 
     }
-    $moveTo( x, y ) {
+    $moveTo( x: number, y: number ): void {
         this.$goToXY( x, y );       
     }
-    $_onEdgeBounds() {
+    $_onEdgeBounds() : {'minDist': number, 'nearestEdge': string}{
         const drawable = this.render.renderer._allDrawables[this.drawableID];
-        if( drawable == null || drawable.skin == null) return null;
+        if( drawable == null || drawable.skin == null) 
+            return {'minDist': 0, 'nearestEdge': ''};
         const bounds = this.render.renderer.getBounds(this.drawableID);
-        if (!bounds) return null;
+        if (!bounds) 
+            return {'minDist': 0, 'nearestEdge': ''};
         const stageWidth = this.render.stageWidth;
         const stageHeight = this.render.stageHeight;
         const distLeft = Math.max(0, (stageWidth / 2) + bounds.left);
@@ -278,7 +311,7 @@ export class Sprite extends Entity {
             nearestEdge = 'bottom';
         }
         if (minDist > 0) {
-            return null// Not touching any edge
+            return {'minDist': 0, 'nearestEdge': ''}// Not touching any edge
         }
         return {'minDist': minDist, 'nearestEdge':nearestEdge};
     }
@@ -287,10 +320,10 @@ export class Sprite extends Entity {
     //     if(judge &&  judge.minDist && judge.minDist == Infinity) return null;
     //     return judge;
     // }
-    $ifOnEdgeBounds() {
+    $ifOnEdgeBounds(): void {
         this.$_ifOnEdgeBounds();
     }
-    $_ifOnEdgeBounds() {
+    $_ifOnEdgeBounds(): void {
 //        this._ifOnEdgeBoundsFlag = false;
         if(!this.$isAlive()) return;
         const drawable = this.render.renderer._allDrawables[this.drawableID];
@@ -356,7 +389,7 @@ export class Sprite extends Entity {
         */
 
     }
-    $isTouchingTargetToTarget(targets) {
+    $isTouchingTargetToTarget(src: Entity, targets: Entity[]) {
         let _targets;
         if(Array.isArray(targets)){
             _targets = [...targets];
@@ -370,11 +403,10 @@ export class Sprite extends Entity {
                 }    
             }
         }
-
-        const touch = super.$isTouchingTargetToTarget(this, _targets);
+        const touch = super.$isTouchingTargetToTarget(src, _targets);
         return touch;
     }
-    $_keepInFence(x, y) {
+    $_keepInFence(x: number, y: number): void {
         if(!this.$isAlive()) return;
         const fencedPosition = this.$_keepInFencePosition(x, y);
         if(fencedPosition){
@@ -384,11 +416,13 @@ export class Sprite extends Entity {
             this.$_position.y = fencedPosition[1];
         }
     }
-    $_keepInFencePosition(newX,newY){
+    $_keepInFencePosition(newX: number, newY: number): number[]{
         const drawable = this.render.renderer._allDrawables[this.drawableID];
-        if( drawable == null || drawable.skin == null) return;
+        if( drawable == null || drawable.skin == null) 
+            return [newX, newY];
         const bounds = this.render.renderer.getBounds(this.drawableID);
-        if(!bounds) return;
+        if(!bounds) 
+            return [newX, newY];
         const stageWidth = this.render.stageWidth;
         const stageHeight = this.render.stageHeight;
 
@@ -423,7 +457,7 @@ export class Sprite extends Entity {
         }
         return [newX + dx , newY + dy];
     }
-    $isTouchingEdge (_callback?:CallableFunction){
+    $isTouchingEdge (_callback?:CallableFunction): boolean{
         if(!this.$isAlive()) false;
 
         const judge = this.$_onEdgeBounds();
@@ -453,7 +487,7 @@ export class Sprite extends Entity {
         if( touch === false) {
             return false;
         }        
-        const judge = this.$$onEdgeBounds();
+        const judge = this.$_onEdgeBounds();
         const nearestEdge = judge.nearestEdge;
         if(nearestEdge == 'bottom' || nearestEdge == 'top') {
             return false;
@@ -468,27 +502,26 @@ export class Sprite extends Entity {
         if( touch === false) {
             return false;
         }        
-        const judge = this.$$onEdgeBounds();
+        const judge = this.$_onEdgeBounds();
         const nearestEdge = judge.nearestEdge;
         if(nearestEdge == 'right' || nearestEdge == 'left') {
             return false;
         }
         return true;
     }
-    $gotoRandomPosition() {
+    $gotoRandomPosition() : void {
         if(!this.$isAlive()) return;
 
-        const p = Libs.default;
-        const _x = (Math.random() - 0.5 ) * p.stageWidth;
-        const _y = (Math.random() - 0.5 ) * p.stageHeight;
+        const _x = (Math.random() - 0.5 ) * libs.stageWidth;
+        const _y = (Math.random() - 0.5 ) * libs.stageHeight;
         this.$setXY( _x, _y);
     }
 
-    $gotoMousePosition() {
-        const position = Libs.default.mousePosition;
+    $gotoMousePosition() : void {
+        const position = libs.mousePosition;
         this.$setXY(position.x, position.y);
     }
-    $gotoSprite(sprite) {
+    $gotoSprite(sprite: Sprite) : void {
         if(!this.$isAlive()) return;
         if( sprite instanceof Sprite ) {
             // const _x = sprite.$_position.x;
@@ -499,7 +532,7 @@ export class Sprite extends Entity {
         }    
     }
 
-    $glideToPosition(sec, x, y) {
+    async $glideToPosition(sec: number, x: number, y: number): Promise<void> {
         if(!this.$isAlive()) return;
         if(typeof sec != 'number') return;
         let _x = 0;
@@ -508,7 +541,7 @@ export class Sprite extends Entity {
             _x = x;
             _y = y;
         }else{
-            const obj = x;
+            const obj = x as {x:number, y:number};
             _x = obj.x;
             _y = obj.y;
         }
@@ -543,10 +576,10 @@ export class Sprite extends Entity {
             },Env.pace);
         });
     }
-    static get Global () {
+    static get Global (): string {
         return 'global'
     }
-    $pointToMouse ( _global = null ) {
+    $pointToMouse ( _global?: string): void {
         if(!this.$isAlive()) return;
         if( _global === Sprite.Global ){
             this.pointTowardsMouseCursolGlobal();
@@ -555,7 +588,7 @@ export class Sprite extends Entity {
         }
     }
 
-    $pointToTarget( target ) {
+    $pointToTarget( target: Sprite): void {
         if(!this.$isAlive()) return;
 
         let dx = target.$_position.x - this.$_position.x;
@@ -568,7 +601,7 @@ export class Sprite extends Entity {
         this.$pointInDerection( direction );
     }
 
-    $pointInDerection( _d ) {
+    $pointInDerection( _d: number): void {
         if(!this.$isAlive()) return;
 
         if(_d < 0) {
@@ -586,7 +619,7 @@ export class Sprite extends Entity {
             this.$_direction = _direction;
         }
     }
-    $setRotationStyle( _style ) {
+    $setRotationStyle( _style: RotationStyle ): void {
         if(!this.$isAlive()) return;
         if(this.costumes){
             this.costumes.setRotationStyle( _style );
@@ -621,11 +654,11 @@ export class Sprite extends Entity {
         }
     }
     $nextBackDrop() {
-        const stage = PlayGround.default.stage;
+        const stage = playGround.stage;
         stage.$nextBackDrop();
     }
-    $switchBackDrop( backdrop ) {
-        const stage = PlayGround.default.stage;
+    $switchBackDrop( backdrop: string|number ) {
+        const stage = playGround.stage;
         stage.$switchBackDrop( backdrop );
     }
 
@@ -648,7 +681,7 @@ export class Sprite extends Entity {
         if(soundData == undefined ){
             throw "【Sprite.Sound.add】サウンドデータの指定がありません"
         }else if(soundData == undefined || typeof soundData == "string"){
-            _soundData = PlayGround.default.loadedSounds[soundData];
+            _soundData = playGround.loadedSounds[soundData];
             if(_soundData == undefined){
                 throw "【Sprite.Sound.add】正しいサウンド名を指定してください"
             }
@@ -672,7 +705,7 @@ export class Sprite extends Entity {
         if(imageData == undefined){
             throw "【Sprite.Image.add】イメージデータの指定がありません"
         }else if(typeof imageData == "string"){
-            _imageData = PlayGround.default.loadedImages[imageData];
+            _imageData = playGround.loadedImages[imageData];
             if(_imageData == undefined){
                 throw "【Sprite.Image.add】正しいイメージ名を指定してください"
             }
@@ -690,12 +723,16 @@ export class Sprite extends Entity {
         }
         return this;
     }
-    $getImageNames() {
-        const iterator = this.costumes.costumes.keys();
-        return iterator.toArray();
+    $getImageNames(): string[] {
+        if(this.costumes){
+            const iterator = this.costumes.costumes.keys();
+            const arr = Array.from(iterator);
+            return arr;    
+        }
+        return [];
     }
-    $say( text, properties = {} ) {
-        if(!this.$isAlive()) return;
+    $say( text: string, properties: SPEAK_PROPERTY = {} ) {
+        if(!this.$isAlive() || !this.bubble) return;
         if( text && (typeof text) == 'string') {
             this.bubble.say( text , properties );
             return;
@@ -703,22 +740,24 @@ export class Sprite extends Entity {
         // 空テキストのときは フキダシを消す。
         this.bubble.destroyBubble();
     }
-    $sayForSecs( text, secs, properties={}) {
+    $sayForSecs( text: string, secs: number, properties: SPEAK_PROPERTY={}) {
         if(!this.$isAlive()) return;
         this.$say(text, properties);
         const me = this;
         return new Promise<void>(resolve => {
             this._bubbleTimeout = setTimeout(() => {
                 // タイムアウトしたときに吹き出しを消す
-                me.bubble.destroyBubble();
-                me._bubbleTimeout = null;
+                if(me.bubble){
+                    me.bubble.destroyBubble();
+                    me._bubbleTimeout = undefined;
+                }
                 resolve();
-            }, 1000 * secs);
+            }, 1000 * secs);    
         });
     }
 
-    $think( text, properties = {} ) {
-        if(!this.$isAlive()) return;
+    $think( text: string, properties: SPEAK_PROPERTY = {} ) {
+        if(!this.$isAlive() || this.bubble==undefined) return;
         if( text && (typeof text) == 'string') {
             this.bubble.think( text , properties );
             return;
@@ -726,28 +765,29 @@ export class Sprite extends Entity {
 
         this.bubble.destroyBubble();
     }
-    $thinkForSecs( text, secs, properties={}) {
+    $thinkForSecs( text: string, secs: number, properties: SPEAK_PROPERTY={}) {
         if(!this.$isAlive()) return;
         this.$think(text, properties);
         return new Promise<void>(resolve => {
             this._bubbleTimeout = setTimeout(() => {
-                this._bubbleTimeout = null;
-                this.bubble.destroyBubble();
+                this._bubbleTimeout = undefined;
+                if(this.bubble)
+                    this.bubble.destroyBubble();
                 resolve();
             }, 1000 * secs);
         });
     }
-    $_isDrawableExist(){
+    $_isDrawableExist(): boolean {
         const drawable = this.render.renderer._allDrawables[this.drawableID];
         if(drawable == null){
             return false;
         }
         return true;
     }
-    $drawingDimensions() {
+    $drawingDimensions(): {width:number, height: number} {
         return this.$getDrawingDimensions();
     }
-    $getDrawingDimensions() {
+    $getDrawingDimensions(): {width:number, height: number}{
         let width = 0;
         let height = 0  
         if(this.$_isDrawableExist()){
@@ -757,23 +797,23 @@ export class Sprite extends Entity {
         }   
         return {width, height};
     }
-    $getCurrentPosition() {
+    $getCurrentPosition(): {x: number, y: number}{
         const x = this.$_position.x;
         const y = this.$_position.y
         return {x:x, y:y};
     }
-    $getCurrentDirection() {
+    $getCurrentDirection(): number {
         return this.$_direction;
     }
 
-    $getCurrentSize() {
+    $getCurrentSize(): {w: number, h: number} {
         return {w: this.$_scale.w, h: this.$_scale.h};
     }
 
-    async $askAndWait(text) {
-        const question = new QuestionBoxElement.default();
+    async $askAndWait(text: string): Promise<string> {
+        const question = new QuestionBoxElement();
         const me = this;
-        return new Promise(async resolve=>{
+        return new Promise<string>(async resolve=>{
             const answer = await question.ask(me, text);
 //            question.removeAsk(me);
             resolve(answer);
@@ -866,20 +906,26 @@ export class Sprite extends Entity {
         const me = this;
         const costume = {"no": 0, "name": ""};
         Object.defineProperty(costume, "no", {
-            get : function() {
-                return me.costumes.currentSkinNo();
+            get : function(): number {
+                if(me.costumes)
+                    return me.costumes.currentSkinNo();
+                else
+                    return -1;
             },
         })
         Object.defineProperty(costume, "name", {
-            get : function() {
-                return me.costumes.currentSkinName();
+            get : function() : string {
+                if(me.costumes)
+                    return me.costumes.currentSkinName();
+                else
+                    return '';
             },
         })
 
         return costume;
     }
     get Backdrop(){
-        const stage = PlayGround.default.stage;
+        const stage = playGround.stage;
         const backdrop = {"no": 0, "name": ""};
         Object.defineProperty(backdrop, "no", {
             get : function() {

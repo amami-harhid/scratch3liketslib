@@ -113,8 +113,8 @@ export class Cast {
      * @param {*} value Value to convert to RGB color object.
      * @return {RGBOject} [r,g,b], values between 0-255.
      */
-    static toRgbColorObject (value) {
-        let color;
+    static toRgbColorObject (value: string) : {r: number, g: number, b: number, a?: number}{
+        let color: {r: number, g: number, b: number, a?: number};
         if (typeof value === 'string' && value.substring(0, 1) === '#') {
             color = Color.hexToRgb(value);
 

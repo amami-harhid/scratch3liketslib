@@ -1,39 +1,57 @@
 //const Backdrops = require('./backdrops');
 //const Canvas = require('./canvas');
-const Env = require('./env');
-const Entity = require('./entity');
-const libs = require('./libs');
-const PlayGround = require('./playGround');
-const QuestionBoxElement = require('./io/questionBoxElement');
-const StageLayering = require('./stageLayering');
-declare type StageOptions = {
-    effect:object,
-    position: {x:number,y:number},
-    scale: {x:number,y:number}
-};
+import { Env } from "./env";
+import { Entity, ENTITY_OPTIONS } from "./entity";
+import { libs } from "./libs";
+import { playGround } from "./playGround";
+import { QuestionBoxElement } from "./io/questionBoxElement";
+import { StageLayering } from "./stageLayering";
+import { Sprite } from "./sprite";
+
+import type { S3RendererEffects } from "../libTypes/render/S3RendererEffects";
+import { Backdrops } from "./backdrops";
+
+declare type MouseStatus = {
+    scratchX:number, 
+    scratchY:number, 
+    x:number, 
+    y:number, 
+    down: boolean, 
+    pageX: number, 
+    pageY: number, 
+    clientX: number, 
+    clientY: number
+}
 export class Stage extends Entity {
-    constructor( options:StageOptions ) {
+    private direction: number;
+    private scale: {w: number, h: number};
+    private keysCode: string[];
+    private keysKey: string[];
+    public backdrops: Backdrops;
+    private _sprites: Sprite[];
+    private skinIdx: number;
+    public mouse: MouseStatus; 
+    constructor( options:ENTITY_OPTIONS ) {
         if(typeof options == "string") throw "new Stage() パラメータはオブジェクト型のみ"
         super( "stage", StageLayering.BACKGROUND_LAYER, options );
         this.effect = {
-            color : ('effect' in options)? (('color' in options.effect)? options.effect.color : 0) : 0,
-            mosaic : ('effect' in options)? (('mosaic' in options.effect)? options.effect.mosaic : 0) : 0,
-            fisheye : ('effect' in options)? (('fisheye' in options.effect)? options.effect.fisheye : 0) : 0,
+            color : (options.effect)? ((options.effect.color)? options.effect.color : 0) : 0,
+            mosaic : (options.effect)? ((options.effect.mosaic)? options.effect.mosaic : 0) : 0,
+            fisheye : (options.effect)? ((options.effect.fisheye)? options.effect.fisheye : 0) : 0,
         };
-        this.$_position =  ('position' in options)? {x: options.position.x, y: options.position.y} : {x:0, y:0};
-        this.direction = ('direction' in options)? options.direction : 90;
-        this.scale = ('scale' in options)? {x: options.scale.x, y: options.scale.y} : {x:100, y:100};
+        this.$_position =  (options.position)? {x: options.position.x, y: options.position.y} : {x:0, y:0};
+        this.direction = (options.direction)? options.direction : 90;
+        this.scale = (options.scale)? {w: options.scale.w, h: options.scale.h} : {w:100, h:100};
 
         this.keysCode = [];
         this.keysKey = [];
-        this.backdrops = new libs.default.Backdrops();
+        this.backdrops = new libs.Backdrops();
         this._sprites = [];
         this.skinIdx = -1;
         this.mouse = {scratchX:0, scratchY:0, x:0, y:0, down: false, pageX: 0, pageY: 0, clientX: 0, clientY: 0 };
         const me = this;
         // これは Canvasをつくる Element クラスで実行したほうがよさそう（関連性強いため）
-        const p = PlayGround.default;
-        const canvas = p.canvas;
+        const canvas = playGround.canvas;
         const body = document.getElementById('main');
         if(body){
             body.addEventListener('mousemove', (e) => {
@@ -49,8 +67,8 @@ export class Stage extends Entity {
             me.mouse.clientX = e.clientX;
             me.mouse.clientY = e.clientY;
             
-            me.mouse.scratchX = e.offsetX - p.canvas.width/2;
-            me.mouse.scratchY = p.canvas.height/2 - e.offsetY;
+            me.mouse.scratchX = e.offsetX - playGround.canvas.width/2;
+            me.mouse.scratchY = playGround.canvas.height/2 - e.offsetY;
 
 //            e.stopPropagation()
         }, {});
@@ -67,7 +85,7 @@ export class Stage extends Entity {
             e.stopPropagation();
         })
   
-        PlayGround.default.stage = this;
+        playGround.stage = this;
     }
     isSprite() {
         return false;
@@ -107,7 +125,7 @@ export class Stage extends Entity {
     update() {
         super.update();
         this.backdrops.setPosition(this.$_position.x, this.$_position.y);
-        this.backdrops.setScale(this.scale.x, this.scale.y);
+        this.backdrops.setScale(this.scale.w, this.scale.h);
         this.backdrops.setDirection(this.direction);
         this.backdrops.update(this.drawableID);
         for(const _sprite of this._sprites){
@@ -159,7 +177,7 @@ export class Stage extends Entity {
         if(soundData == undefined){
             throw "【Stage.Sound.add】サウンドデータの指定がありません"
         }else if(soundData == undefined || typeof soundData == "string"){
-            _soundData = PlayGround.default.loadedSounds[soundData];
+            _soundData = playGround.loadedSounds[soundData];
             if(_soundData == undefined){
                 throw "【Stage.Sound.add】正しいサウンド名を指定してください"
             }
@@ -183,7 +201,7 @@ export class Stage extends Entity {
         if(imageData == undefined){
             throw "【Stage.Image.add】イメージデータの指定がありません"
         }else if(typeof imageData == "string"){
-            _imageData = PlayGround.default.loadedImages[imageData];
+            _imageData = playGround.loadedImages[imageData];
             if(_imageData == undefined){
                 throw "【Stage.Image.add】正しいイメージ名を指定してください"
             }
@@ -198,17 +216,17 @@ export class Stage extends Entity {
         await this._addImage(name, data, this.backdrops);
 
     }
-    $getImageNames() {
+    $getImageNames() : string[]{
         const iterator = this.backdrops.costumes.keys();
-        return iterator.toArray();
+        return Array.from(iterator);
     }
-    $emitWhenBackdropChange(backdropName, newBackdropName) {
+    $emitWhenBackdropChange(backdropName: string, newBackdropName: string): void {
         // 新しい名前の背景に切り替わったとき
         if(backdropName !== newBackdropName){
             this.$broadCastBackdropSwitch(newBackdropName);
         }
     }
-    $nextBackDrop() {
+    $nextBackDrop(): void {
         if(!this.isAlive()) return;
         if(this.backdrops){
             const name_before = this.backdrops.currentSkinName();
@@ -218,7 +236,7 @@ export class Stage extends Entity {
         }
         //this.ifOnEdgeBounds();
     }
-    $switchBackDrop( val ) {
+    $switchBackDrop( val: string|number ): void {
         if(!this.isAlive()) return;
         if( val ){
             if( typeof val === 'string') {
@@ -254,19 +272,18 @@ export class Stage extends Entity {
         }
         
         this.backdrops.destroyAllSkin();
-        PlayGround.default.stage = null;
         this.$delete();
     }
 
-    async $askAndWait(text) {
-        const question = new QuestionBoxElement.default();
+    async $askAndWait(text: string): Promise<string> {
+        const question = new QuestionBoxElement();
         const me = this;
-        return new Promise(async resolve=>{
+        return new Promise<string>(async resolve=>{
             const answer = await question.ask(me, text);
             resolve(answer);
         });
     }
-    get Backdrop(){
+    get Backdrop(): {no: number, name: string}{
         const stage = this;
         const backdrop = {"no": 0, "name": ""};
         Object.defineProperty(backdrop, "no", {

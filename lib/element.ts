@@ -1,11 +1,10 @@
 import { Canvas } from './canvas';
 import { CSS } from './css';
-//const Env = require('./env');
-const PlayGround = require('./playGround');
-const QuestionBoxElement = require('./io/questionBoxElement');
-const Libs = require('./libs');
-const Utils = require('./utils');
-const threads = require('./threads');
+import { playGround } from './playGround';
+import { QuestionBoxElement } from './io/questionBoxElement';
+//import { libs } from './libs';
+//import { Utils } from './utils';
+import { threads } from './threads';
 const ScratchHeader = "scratch3Header";
 const ControlGreenFlag = "green-flag_green-flag";
 const ControlStopMark = "stop-all_stop-all_pluqe";
@@ -51,8 +50,7 @@ export class Element {
         main.style.zIndex = `${zIndex}`;
         main.style.position = 'absolute';
         main.style.touchAction = 'manipulation';
-//        Element.main = main;
-        PlayGround.default.main = main;
+        playGround.main = main;
         
         const header = document.createElement("div");
         header.id=ScratchHeader;
@@ -125,7 +123,7 @@ export class Element {
         const canvas = Canvas.createCanvas( );
         canvas.classList.add("likeScratch-canvas");
         Element.canvas = canvas;
-        PlayGround.default.canvas = canvas;
+        playGround.canvas = canvas as HTMLCanvasElement;
         //canvas.getContext('2d', { willReadFrequently: true });
         return canvas;
     }
@@ -133,7 +131,7 @@ export class Element {
         const canvas = Canvas.createTextCanvas();
         canvas.classList.add("likeScratch-text-canvas");
         Element.textCanvas = canvas;
-        PlayGround.default.textCanvas = canvas;
+        playGround.textCanvas = canvas as HTMLCanvasElement;
         return canvas;
     }
     static insertCss() {
@@ -150,7 +148,6 @@ export class Element {
         document.getElementsByTagName('head')[0].appendChild(style);
     }
     static async flagInit() {
-        const playground = PlayGround.default;
         const controlGreenFlag = Element.getControlGreenFlag();
         const controlPauseMark = Element.getElementById(ControlPauseMark);
         const controlStopMark = Element.getControlStopMark();
@@ -174,10 +171,10 @@ export class Element {
             controlStopMark.classList.add('enableClick');
             controlStopMark.classList.remove('is-not-active');
             controlStopMark.classList.add('is-active');
-            playground.threads.startAll();
+            playGround.threads.startAll();
             greenFlagClicked = true;
 //            Element.changeToReloadMark(controlGreenFlag);
-            playground.runtime.emit('RUNNING_GAME'); // ON は processの中にある
+            playGround.runtime.emit('RUNNING_GAME'); // ON は processの中にある
         });
         //flag.classList.add(Element.DISPLAY_NONE);
 
@@ -187,15 +184,15 @@ export class Element {
             e.stopPropagation();
             if(restartMarkFlag){
                 if(greenFlagClicked===true) {
-                    playground.threads.startAll();
-                    playground.runtime.emit('RUNNING_GAME'); // ON は processの中にある
+                    playGround.threads.startAll();
+                    playGround.runtime.emit('RUNNING_GAME'); // ON は processの中にある
                 }
                 Element.changeToPauseMark(controlPauseMark);
                 restartMarkFlag = false;
             }else{
                 if(greenFlagClicked===true) {
                     threads.pauseThreadsInterval();//一時停止
-                    playground.runtime.emit('PAUSING_GAME'); // ON は processの中にある
+                    playGround.runtime.emit('PAUSING_GAME'); // ON は processの中にある
                 }
                 Element.changeToRestartMark(controlPauseMark);
                 restartMarkFlag = true;
@@ -215,7 +212,7 @@ export class Element {
             //process._init();
             Element.stopAll();
         });
-        const runtime = PlayGround.default.runtime;
+        const runtime = playGround.runtime;
         const EmitID_GREEN_BUTTON_ENABLED = runtime.GREEN_BUTTON_ENABLED;
         runtime.on(EmitID_GREEN_BUTTON_ENABLED, function(){
             controlStopMark.classList.remove('enableClick');
@@ -230,12 +227,11 @@ export class Element {
         });
     }
     static stopAll() {
-        const playground = PlayGround.default;
         // thread loop 停止
         threads.stopThreadsInterval();            
         // スプライトのクローンを削除
-        if(playground.stage.sprites){
-            for(const s of playground.stage.sprites){
+        if(playGround.stage.sprites){
+            for(const s of playGround.stage.sprites){
                 if(s && s.clones){
                     for(const c of s.clones){
                         if(c && c.isAlive()){
@@ -245,16 +241,16 @@ export class Element {
                 }
             }
             // Sprite-QuestionBox を消す
-            for(const s of playground.stage.sprites){
-                QuestionBoxElement.default.removeAsk(s);
+            for(const s of playGround.stage.sprites){
+                QuestionBoxElement.removeAsk(s);
             }
         }
         // Stage-QuestionBox を消す
         // QuestionBoxElement.default.removeAsk(playground.stage);
-        playground.stage.emit(QuestionBoxElement.default.QuestionBoxForceComplete);        
+        playGround.stage.emit(QuestionBoxElement.QuestionBoxForceComplete);        
             
-        playground._draw();
-        playground.runtime.emit('PAUSING_GAME'); // ON は processの中にある
+        playGround._draw();
+        playGround.runtime.emit('PAUSING_GAME'); // ON は processの中にある
         
     }
     static getElementById(id:string): HTMLElement {
@@ -265,7 +261,6 @@ export class Element {
         throw `Not found element id=${id}`;
     }
     static async init() {
-        const playground = PlayGround.default;
         const main = Element.createMain(999);
         Element.createCanvas( );
         // text Canvas

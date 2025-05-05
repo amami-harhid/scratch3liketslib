@@ -1,6 +1,6 @@
-import {S3SoundPlayer} from '../libTypes/engine/S3SoundPlayer';
-import {S3AudioEffectChain} from '../libTypes/engine/S3AudioEffectChain';
-import {S3SoundPlayerOptions} from '../libTypes/engine/S3SoundPlayerOptoins';
+import {S3SoundPlayer} from '../libTypes/audio/S3SoundPlayer';
+import {S3AudioEffectChain} from '../libTypes/audio/S3AudioEffectChain';
+import {S3SoundPlayerOptions} from '../libTypes/audio/S3SoundPlayerOptoins';
 export class SoundPlayer {
     private _name: string;
     private _soundPlayer: S3SoundPlayer;

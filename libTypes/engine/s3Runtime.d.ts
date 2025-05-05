@@ -25,4 +25,6 @@ export interface S3Runtime extends S3Emitter{
      */
     keyIsDown(key:string):boolean;
 
+    startHats(): void;
+
 }

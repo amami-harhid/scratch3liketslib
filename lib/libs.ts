@@ -1,27 +1,27 @@
-const Backdrops = require('./backdrops');
-const Cast = require('./util/cast');
-const Controls = require('./controls').Controls;
-const Costumes = require('./costumes');
+import { Backdrops } from "./backdrops";
+import { Cast } from "./util/cast";
+import { Controls } from "./controls";
+import { Costumes } from "./costumes";
 import { Entity } from "./entity";
-const Env = require('./env');
-const EventEmitter = require('events').EventEmitter;
-const FunctionChecker = require('./util/functionChecker');
-const Keyboard = require('./io/keyboard');
-const {ImageEffective,SoundOption, RotationStyle} = require('./types');
-const Loop = require('./controls').Loop;
-const MathUtils = require('./math-utils');
-const Monitors = require('./monitor/monitors');
+import { Env } from "./env";
+import { EventEmitter } from 'events';
+import { FunctionChecker } from "./util/functionChecker";
+import { Keyboard } from "./io/keyboard";
+import { ImageEffective, SoundOption, RotationStyle } from './entityConstant';
+import { Loop } from "./controls";
+import { MathUtils } from "./math-utils";
+import { Monitors } from "./monitor/monitors";
 //const Mouse = require('./io/mouse');
 import { playGround } from "./playGround";
-const Render = require('./render');
+import { Render } from "./render";
 //const RotationStyle = require('./rotationStyle');
-const Sounds = require('./sounds');
-const Sprite = require('./sprite');
-const Stage = require('./stage');
-const StageLayering = require('./stageLayering');
-const TextDraw = require('./text/textDraw');
-const TextOption = require('./text/textOption');
-const Utils = require('./utils');
+import { Sounds } from "./sounds";
+import { Sprite } from "./sprite";
+import { Stage } from "./stage";
+import { StageLayering } from "./stageLayering";
+//const TextDraw = require('./text/textDraw');
+//const TextOption = require('./text/textOption');
+import { Utils } from "./utils";
 export class Libs {
 
     get Backdrops () {
@@ -177,12 +177,12 @@ export class Libs {
     get Sprite () {
         return Sprite;
     }
-    get TextDraw () {
-        return TextDraw;
-    }
-    get TextOption () {
-        return TextOption;
-    }
+    // get TextDraw () {
+    //     return TextDraw;
+    // }
+    // get TextOption () {
+    //     return TextOption;
+    // }
     get Utils () {
         return Utils;
     }

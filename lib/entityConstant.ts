@@ -1,4 +1,4 @@
-export const ImageEffective = class {
+export class ImageEffective {
     /**
      * 色の効果
      */
@@ -45,7 +45,7 @@ export class SoundOption {
         return "pitch";
     }
 }
-export const RotationStyle = class {
+export class RotationStyle {
     static get LEFT_RIGHT () {
         return 'left-right';
     }

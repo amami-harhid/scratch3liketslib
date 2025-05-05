@@ -4,7 +4,7 @@ export class MathUtil {
      * @param {!number} deg Value in degrees.
      * @return {!number} Equivalent value in radians.
      */
-    static degToRad (deg) {
+    static degToRad (deg: number) :number {
         return deg * Math.PI / 180;
     }
 
@@ -13,7 +13,7 @@ export class MathUtil {
      * @param {!number} rad Value in radians.
      * @return {!number} Equivalent value in degrees.
      */
-    static radToDeg (rad) {
+    static radToDeg (rad: number) :number{
         return rad * 180 / Math.PI;
     }
 
@@ -25,7 +25,7 @@ export class MathUtil {
      * @param {!number} max Maximum limit.
      * @return {!number} Value of n clamped to min and max.
      */
-    static clamp (n, min, max) {
+    static clamp (n:number, min:number, max:number) :number{
         return Math.min(Math.max(n, min), max);
     }
 
@@ -39,7 +39,7 @@ export class MathUtil {
      * @param {!number} max Maximum limit.
      * @return {!number} Value of n wrapped between min and max.
      */
-    static wrapClamp (n, min, max) {
+    static wrapClamp (n: number, min: number, max: number): number {
         const range = (max - min) + 1;
         return n - (Math.floor((n - min) / range) * range);
     }

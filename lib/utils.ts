@@ -6,7 +6,7 @@ export class Utils {
      * @param {*} obj2 {x:number, y:number}
      * @returns distance
      */
-    static distance(obj1:Entity, obj2:Entity) : number {
+    static distance(obj1:{x:number,y:number}, obj2:{x:number,y:number}) : number {
         if(obj1 && obj2 && (obj1.x != undefined && obj1.y != undefined && obj2.x != undefined && obj2.y != undefined) ){
             const x1 = obj1.x;
             const y1 = obj1.y;

@@ -2,17 +2,26 @@
  * Functionの種類を判定する
  * 新しめのJavascript構文を扱える@babel/parserを使用する
  */
-const { parse } = require("@babel/parser");
-
+import { parse } from '@babel/parser';
+declare type FUNCTION_DECLARE = {
+    isArrow : boolean,
+    isAsync : boolean,
+    isGenerator : boolean,
+};
+declare type TYPE_OF_GENERATOR = {
+    isAsyncGenerator: boolean,
+    isAwaiter: boolean,
+};
 export class FunctionChecker {
     /**
      * 関数定義を渡しアロー関数、Async、Generatorの種類を返す。
-     * @param {*} func 
-     * @returns 関数の種類
+     * @param {CallableFunction} func 
+     * @returns {FUNCTION_DECLARE} 関数の種類
      */
-    static getFunctionDeclares(func){
+    static getFunctionDeclares(func: CallableFunction) : FUNCTION_DECLARE{
 
         const ast = parse(`const x = ${func.toString()}`);
+        // @ts-ignore (ts(2339) declarations undefined error)
         const functionInit = ast.program.body[0].declarations[0].init;
         const isArrow = functionInit.type == "ArrowFunctionExpression";
         const isGenerator = functionInit.generator;
@@ -25,13 +34,14 @@ export class FunctionChecker {
     }
     /**
      * 未使用
-     * @param {*} func 
-     * @returns {isAsyncGenerator, isAwaiter}
+     * @param {CallableFunction} func 
+     * @returns {TYPE_OF_GENERATOR}
      */
-    static getTypeOfGenerator(func) {
+    static getTypeOfGenerator(func: CallableFunction) :TYPE_OF_GENERATOR {
         let isAsyncGenerator = false;
         let isAwaiter = false;
         const ast = parse(`const x = ${func.toString()}`);
+        // @ts-ignore (ts(2339) declarations undefined error)
         const functionInit = ast.program.body[0].declarations[0].init;
         if(functionInit.body && functionInit.body.body){
             if(Array.isArray(functionInit.body.body)){

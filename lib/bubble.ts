@@ -1,5 +1,5 @@
 import { PlayGround, playGround } from "./playGround";
-import { S3Renderer } from "libTypes/engine/S3Renderer";
+import { S3Renderer } from "../libTypes/render/S3Renderer";
 import { Sprite } from "./sprite";
 import { StageLayering } from "./stageLayering";
 import { uid } from "./uid";
@@ -11,10 +11,10 @@ declare type BUBBLE_STATE = {
     onSpriteRight:boolean,
     uid:string,
 };
-declare type SPEAK_PROPERTY = {
-    scale:{w:number, h:number},    
+export declare type SPEAK_PROPERTY = {
+    scale?:{w:number, h:number},    
 }
-export const Bubble = class {
+export class Bubble{
     private sprite: Sprite;
     //private playground: PlayGround;
     private renderer: S3Renderer|null;
@@ -109,7 +109,7 @@ export const Bubble = class {
             }
        }
     }
-    async _renderBubble(_properties:{scale:{w:number, h:number}}={scale:{w:0,h:0}}) {
+    async _renderBubble(_properties:SPEAK_PROPERTY={scale:{w:0,h:0}}) {
         if(this.sprite.visible == false || this.bubbleState.text === '') {
             if( this.bubbleState.uid != null ) {
                 this.destroyBubble();
@@ -121,14 +121,14 @@ export const Bubble = class {
                 this.createDrawable();
                 await this.createTextSkin();    
                 if( Object.keys(_properties).length > 0 ) {
-                    if( 'scale' in _properties ) {
+                    if( _properties.scale ) {
                         this.updateScale( _properties.scale.w, _properties.scale.h );
                     }
                 }
                 this.renderer.updateDrawableSkinId(this.bubbleState.drawableID, this.bubbleState.skinId);
             }else if(this.bubbleState.skinId) {
                 if( Object.keys(_properties).length > 0 ) {
-                    if( 'scale' in _properties ) {
+                    if( _properties.scale ) {
                         this.updateScale( _properties.scale.w, _properties.scale.h );
                     }
                 }

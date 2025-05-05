@@ -1,13 +1,12 @@
 import { Canvas } from '../canvas';
 import { EventEmitter } from 'events';
 import { Render } from '../render';
-import {S3CanvasMeasurementProvider} from './s3-canvas-measurement-provider';
-import { S3Renderer } from '../../libTypes/engine/S3Renderer';
+import {S3CanvasMeasurementProvider} from './s3CanvasMeasurementProvider';
+import { S3Renderer } from '../../libTypes/render/S3Renderer';
 import {MonitorRenderingConstants} from './s3RenderConstants';
 import { S3Silhouette } from './s3Silhouette';
-import { S3TextWrapper } from './s3-text-wrapper';
 import * as twgl from 'twgl.js';
-import { S3Drawable } from 'libTypes/engine/S3Drowable';
+import { S3Drawable } from '../../libTypes/render/S3Drowable';
 const MonitorStyle = {
     MAX_LINE_WIDTH: 480,  // stage width
     PADDING_VALUE_VIRTICAL: 5, // Padding around the value text area
@@ -66,7 +65,6 @@ export class S3MonitorSkin extends EventEmitter {
     private _canvas: HTMLCanvasElement|null;
     private _ctx: CanvasRenderingContext2D|null;
     private _measurementProvider: S3CanvasMeasurementProvider|null;
-    public textWrapper:S3TextWrapper|null;
     private _text: string;
     public titleLineWidth:number;
     public valueLineWidth:number;
@@ -141,7 +139,6 @@ export class S3MonitorSkin extends EventEmitter {
         this._canvas = null;
         this._ctx = null;
         this._measurementProvider = null;
-        this.textWrapper = null;
         this._text = '';
         this.titleLineWidth = -1;
         this.valueLineWidth = -1;
@@ -159,7 +156,6 @@ export class S3MonitorSkin extends EventEmitter {
         this._ctx = this._canvas.getContext('2d', { willReadFrequently: true });
         if(this._ctx == undefined) throw 'Unable to get ctx';
         this._measurementProvider = new S3CanvasMeasurementProvider(this._ctx);
-        this.textWrapper = new S3TextWrapper(this._measurementProvider);
 
     }
     getDefaultHeight(){

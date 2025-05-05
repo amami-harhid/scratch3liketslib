@@ -1,4 +1,4 @@
-import type {S3Renderer} from '../../libTypes/engine/S3Renderer';
+import type {S3Renderer} from '../../libTypes/render/S3Renderer';
 import type {S3Runtime,S3IODevice} from '../../libTypes/engine/s3Runtime';
 import type {S3Keyboard} from '../../libTypes/io/s3Keyboard';
 import { EventEmitter } from 'events';

@@ -2,6 +2,7 @@ import {EventEmitter} from 'events';
 import { playGround } from '../playGround';
 import { Utils } from '../utils';
 import { Entity } from '../entity';
+import { Sprite } from 'lib/sprite';
 import { Stage } from '../stage';
 
 /** div include canvas */
@@ -75,7 +76,7 @@ export class QuestionBoxElement extends EventEmitter {
      * @param {*} entity 
      * @returns Stageの場合 True
      */
-    static isStage(entity) {
+    static isStage(entity: Entity): boolean {
         if(entity['isSprite'] &&  entity.isSprite() === false ){
             return true;
         }
@@ -86,13 +87,13 @@ export class QuestionBoxElement extends EventEmitter {
      * @param {*} entity 
      * @returns Spriteの場合 True
      */
-    static isSprite(entity) {
+    static isSprite(entity: Entity): boolean {
         if(entity['isSprite'] &&  entity.isSprite() === true ){
             return true;
         }
         return false;
     }
-    async ask( entity:Entity, text:string ) {
+    async ask( entity:Entity, text:string ): Promise<string> {
         this.forceComplete = false;
         const result = await this.askWait(entity);
         // @ts-ignore : this.forceComplete is changed to true in askWait(). 
@@ -131,7 +132,8 @@ export class QuestionBoxElement extends EventEmitter {
                 questionContainer.appendChild(questionLabel);
             }else if( QuestionBoxElement.isSprite(entity) ){
                 // スプライトの場合
-                entity.Looks.say(text);
+                const sprite = entity as unknown as Sprite;
+                sprite.$say(text);
             }    
         }
 
@@ -180,7 +182,7 @@ export class QuestionBoxElement extends EventEmitter {
 
         input.focus();
 
-        return new Promise(resolve=>{
+        return new Promise<string>(resolve=>{
             me.once(QuestionBoxElement.TextInputComplete, ()=>{
                 // 質問の枠を消す    
                 QuestionBoxElement.removeAsk(entity);
@@ -194,10 +196,11 @@ export class QuestionBoxElement extends EventEmitter {
     /**
      * 質問を消す
      */
-    static removeAsk(entity) {
+    static removeAsk(entity: Entity) {
         if( entity && QuestionBoxElement.isSprite(entity) ){
             // スプライトの場合、フキダシを消す
-            entity.Looks.say('');
+            const sprite = entity as unknown as Sprite;
+            sprite.Looks.say('');
         }
         const _stageOverlays = document.getElementById(StageOverlays);
         if(_stageOverlays){

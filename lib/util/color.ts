@@ -57,7 +57,7 @@ export class Color {
      * @param {!string} hex Hex representation of the color.
      * @return {RGBObject} null on failure, or rgb: {r: red [0,255], g: green [0,255], b: blue [0,255]}.
      */
-    static hexToRgb (hex) {
+    static hexToRgb (hex: string): {r:number,g:number,b:number} {
         const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -65,7 +65,7 @@ export class Color {
             r: parseInt(result[1], 16),
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16)
-        } : null;
+        } : {r:0,g:0,b:0};
     }
 
     /**
@@ -189,7 +189,7 @@ export class Color {
      * @param {number} fraction1 - the interpolation parameter. If this is 0.5, for example, mix the two colors equally.
      * @return {RGBObject} the interpolated color.
      */
-    static mixRgb (rgb0, rgb1, fraction1) {
+    static mixRgb (rgb0, rgb1, fraction1) : {r:number,g:number,b:number} {
         if (fraction1 <= 0) return rgb0;
         if (fraction1 >= 1) return rgb1;
         const fraction0 = 1 - fraction1;

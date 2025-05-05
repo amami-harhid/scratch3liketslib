@@ -1,6 +1,6 @@
 import { SoundLoader } from "../importer/soundLoader";
 import { Sounds } from '../sounds';
-import { S3SoundPlayerOptions } from '../../libTypes/engine/S3SoundPlayerOptoins';
+import { S3SoundPlayerOptions } from '../../libTypes/audio/S3SoundPlayerOptoins';
 import { Entity } from "../entity";
 
 //const SERVER = 'https://synthesis-service.scratch.mit.edu';

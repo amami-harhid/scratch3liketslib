@@ -18,7 +18,7 @@ export class Canvas {
     // static CanvasText2D ( ) {
     //     return CanvasText2D;
     // }
-    static createCanvas( ) {
+    static createCanvas( ) :HTMLElement{
         if( Canvas.canvas ) {
             return Canvas.canvas;
         }

@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
-const PlayGround = require('./playGround');
-const Utils = require('./utils')
+import { playGround } from "./playGround";
+import { Utils } from "./utils";
 const INTERVAL = 1000/33;
 declare type THREAD_OBJ = {
     threadId:string | null, 
@@ -117,8 +117,7 @@ export class Threads {
     pauseThreadsInterval() {
         if(this._intervalId){
             // 音なっているときは止める。
-            const p = PlayGround.default;
-            const stage = p.stage;
+            const stage = playGround.stage;
             if(stage != null){
                 stage.$soundStopImmediately();
                 stage.$speechStopImmediately();
@@ -147,8 +146,7 @@ export class Threads {
             this._intervalId = null;
             this.clearThreads();
             // 音なっているときは止める。
-            const p = PlayGround.default;
-            const stage = p.stage;
+            const stage = playGround.stage;
             if(stage != null){
                 stage.$soundStopImmediately();
                 stage.$speechStopImmediately();
@@ -168,13 +166,15 @@ export class Threads {
         this.stopper = true;
         this._running = false;
     }
-    stopOtherScripts(entity){
+    stopOtherScripts(entity: Entity){
         const me = this;
         for(const obj of me.threadArr){
+            // @ts-ignore undefined error (entity.threadId). 
             if(obj.entity && obj.entity.id == entity.id && obj.threadId != entity.threadId){
                 // 実行中のスレッドの途中の場合、
                 // Motion,Looks,Sound,Event,Control,Sensingを使ったときは
                 // Proxyのなかで例外を発生させる
+                // @ts-ignore undefined error (setStopThisScriptSwitch) 
                 obj.entity.setStopThisScriptSwitch(true); // 【A】
                 // 「終わるまで音を鳴らす」が実行中の場合、音を強制停止させる
                 obj.entity.emit(obj.entity.SOUND_FORCE_STOP);
@@ -184,6 +184,7 @@ export class Threads {
                 const f = async function*(){
                     // ここで例外が起きる。
                     if(obj.entity){
+                        // @ts-ignore undefined error (throwForceStopThisScripts) 
                         obj.entity.throwForceStopThisScripts();
                         //yield; // ここには到達しない                            
                     }
@@ -204,6 +205,7 @@ export class Threads {
         }else{
             for(const obj of this.threadArr){
                 if(obj.doubleRunable === false && obj.entityId == id && 
+                        // @ts-ignore undefined error (threadCounter) 
                         obj.entity && obj.entity.threadCounter == clickCounter){
                     obj.forceExit = true;
                     obj.entity.$soundStopImmediately();
@@ -213,7 +215,6 @@ export class Threads {
         }
     }
     async interval(me: Threads) {
-        const _p = PlayGround.default;
         for(const obj of me.threadArr){
             if(obj.entity && !obj.entity.isAlive()){ // Entity生きていないとき
                 obj.forceExit = true; // 強制終了とする
@@ -276,14 +277,14 @@ export class Threads {
             if( me._startSwitch === true){
                 // 実行中のスレッドがなくなったとき
                 // 緑の旗のボタンを押せるようにする（赤の停止ボタンは実行待ちのステータスになる）
-                const runtime = PlayGround.default.runtime;
+                const runtime = playGround.runtime;
                 const EmitID_GREEN_MARK_BUTTON_ENABLED = runtime.GREEN_BUTTON_ENABLED;
                 // 個数ゼロになった直後の１回だけ emit するべき。
                 runtime.emit(EmitID_GREEN_MARK_BUTTON_ENABLED);
                 me._startSwitch = false;
             }
         }
-        _p._draw();
+        playGround._draw();
     }
 }
 export const threads = Threads.getInstance();

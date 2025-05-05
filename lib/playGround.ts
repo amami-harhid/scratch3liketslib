@@ -13,6 +13,7 @@ import { Sprite } from './sprite';
 import { Stage } from './stage';
 import { threads } from './threads';
 import { Utils } from './utils';
+import { text } from 'stream/consumers';
 export class PlayGround {
     static _instance:PlayGround;
     /**
@@ -26,10 +27,11 @@ export class PlayGround {
         return PlayGround._instance;
     }
     private _render: Render|null;
-    private _stage: Stage;
+    private _stage: Stage|null;
     private _id:string;
-    public canvas: HTMLCanvasElement|null;
-    public  runtime:Runtime|null;
+    private _canvas: HTMLCanvasElement|null;
+    private _textCanvas: HTMLCanvasElement|null;
+    private _runtime:Runtime|null;
     public runningGame: boolean;
     private _preloadDone: boolean;
     private _prepaeDone: boolean;
@@ -38,10 +40,10 @@ export class PlayGround {
     private _preloadFontPromise: Promise<FontFace>[];
     private _loadedImages: {[key:string]: {name:string,data: any}};
     private _loadedSounds: {[key:string]: {name:string,data: any}};
-    private _monitors: Monitors;
+    private _monitors: Monitors|null;
     private _flag: HTMLElement|null;
     private mainTmp: HTMLElement|null;
-    public main: HTMLElement|null;
+    public main: HTMLElement|undefined;
     public preload: CallableFunction|null;
     public prepare: CallableFunction|null;
     public setting: CallableFunction|null;
@@ -49,7 +51,7 @@ export class PlayGround {
     constructor () {
         this._render = null;
         this._id = this._generateUUID();
-        this.runtime = null;
+        this._runtime = null;
         this._preloadImagePromise = [];
         this._preloadSoundPromise = [];
         this._preloadFontPromise = [];
@@ -58,17 +60,18 @@ export class PlayGround {
 //        this._dataPools = {};
         this._preloadDone = false;
         this._prepaeDone = false;
-
+        this._stage = null;
         this._monitors = null;
         this.runningGame = false;
-        this.canvas = null;
+        this._canvas = null;
         this._flag = null;
         this.mainTmp = null;
-        this.main = null;
+        this.main = undefined;
         this.preload = null;
         this.prepare = null;
         this.setting = null;
         this.draw = null;
+        this._textCanvas = null;
     }
     get monitors() {
         return this._monitors;
@@ -113,21 +116,46 @@ export class PlayGround {
         return threads;
     }
     get render () : Render {
-        if(this._render == undefined) throw 'render is undefined error';
+        if(this._render == undefined) throw 'render undefined error';
         return this._render;
     }
     set render( render:Render ) {
         // _init() の中で設定される。
         this._render = render;
     }
-    set stage ( stage ) {
+
+    set runtime(runtime: Runtime) {
+        this._runtime = runtime;
+    }
+
+    get runtime() : Runtime {
+        if(this._runtime == undefined) throw 'runtime undefined error';
+        return this._runtime;
+    }
+
+    set stage ( stage: Stage ) {
         this._stage = stage;
     }
 
-    get stage () {
+    get stage () : Stage{
+        if( this._stage == undefined) throw 'stage undefined error';
         return this._stage;
     }
 
+    set canvas(canvas: HTMLCanvasElement) {
+        this._canvas = canvas;
+    }
+    get canvas() : HTMLCanvasElement {
+        if(this._canvas == undefined) throw 'canvas undefined error';
+        return this._canvas;
+    }
+    set textCanvas(textCanvas: HTMLCanvasElement) {
+        this._textCanvas = textCanvas;
+    }
+    get textCanvas() : HTMLCanvasElement {
+        if(this._textCanvas == undefined) throw 'textCanvas undefined error';
+        return this._textCanvas;
+    }
     get $stageWidth () {
         if(this._render){
             return this._render.stageWidth;
@@ -216,11 +244,11 @@ export class PlayGround {
         }
         main.classList.add(Element.DISPLAY_NONE);
         this._render = new Render();
-        this.runtime = new Runtime();
+        this._runtime = new Runtime();
         if(this._render == undefined || this._render.renderer == undefined){
             throw 'unable to execute attachRenderer';
         }
-        this.runtime.attachRenderer(this._render.renderer);    
+        this._runtime.attachRenderer(this._render.renderer);    
 
 //        this.clearPools();
 
@@ -231,10 +259,10 @@ export class PlayGround {
         //await this._setting();
 
         this.runningGame = false;
-        this.runtime.on('RUNNING_GAME', ()=>{
+        this._runtime.on('RUNNING_GAME', ()=>{
             this.runningGame = true;
         });
-        this.runtime.on('PAUSING_GAME', ()=>{
+        this._runtime.on('PAUSING_GAME', ()=>{
             this.runningGame = false;
         });
         await Utils.wait(100);
@@ -316,7 +344,7 @@ export class PlayGround {
     spriteClone( src: Object, callback: CallableFunction ) {
         if( src instanceof libs.Sprite ) {
             const _src:Sprite = src as Sprite;
-            _src.clone().then( async( c:Entity ) =>{
+            _src.$clone().then( async( c:Entity ) =>{
                 if( callback ) {
                     const _callback = callback.bind( c );
                     _callback();

@@ -1,9 +1,9 @@
 import { Canvas } from "./canvas";
 import { Element } from "./element";
-const PlayGround = require('./playGround');
+import { playGround } from "./playGround";
 const ScratchRenderer = require('scratch-render');
 import { StageLayering } from "./stageLayering";
-import { S3Renderer } from "libTypes/engine/S3Renderer";
+import { S3Renderer } from "../libTypes/render/S3Renderer";
 export class Render {
     static get WHRate() {
         return 0.75;
@@ -39,7 +39,7 @@ export class Render {
         this.createRenderer();
         const me = this;
         const resizeWindow = function() {
-            const main = PlayGround.default.main;
+            const main = playGround.main;
             Element.mainPositioning(main);
             me.stageResize();
         };

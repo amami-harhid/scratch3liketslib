@@ -1,22 +1,22 @@
 import { Env } from "./env";
 import { ImageLoader } from "./importer/imageLoader";
-const MathUtil = require('./util/math-util');
+import { MathUtil } from "./util/math-util";
 import { playGround } from "./playGround";
 import { Render } from "./render";
-import { RotationStyle } from "./rotationStyle";
-const Utils = require('./utils');
+import { RotationStyle } from "./entityConstant";
+import { Utils } from "./utils";
 export class Costumes {
     static get RotationStyle () {
         return RotationStyle;
     }
     public render: Render|null;
     public skinId: number|undefined;
-    private costumes: Map<string,number>;
-    private _position: {x:number,y:number};
-    private _direction: number;
-    private _scale: {x:number,y:number};
-    private _rotationStyle:RotationStyle;
-    private _rotationStylePatterns: RotationStyle[];
+    public costumes: Map<string,number>;
+    public _position: {x:number,y:number};
+    protected _direction: number;
+    protected _scale: {x:number,y:number};
+    protected _rotationStyle:RotationStyle;
+    protected _rotationStylePatterns: RotationStyle[];
     /**
      * @constructor
      */
@@ -79,7 +79,7 @@ export class Costumes {
         }
         throw 'unable to execute createBitmapSkin';
     }
-    setRotationStyle ( _style ) {
+    setRotationStyle ( _style: RotationStyle ): void{
         if( this._rotationStylePatterns.includes( _style ) ) {
             this._rotationStyle = _style;
         }

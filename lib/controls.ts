@@ -1,6 +1,5 @@
-const Utils = require('./utils');
-const threads  = require('./threads');
-
+import { Utils } from "./utils";
+import { threads } from "./threads";
 export class Loop {
     static get BREAK() {
         return "break";

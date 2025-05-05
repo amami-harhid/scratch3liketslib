@@ -3,8 +3,8 @@ import { Entity } from './entity';
 import { SoundLoader } from './importer/soundLoader';
 //const Process = require('./process');
 import { SoundPlayer } from './soundPlayer';
-import { S3AudioEffectChain } from 'libTypes/engine/S3AudioEffectChain';
-import { S3SoundPlayerOptions } from '../libTypes/engine/S3SoundPlayerOptoins';
+import { S3AudioEffectChain } from '../libTypes/audio/S3AudioEffectChain';
+import { S3SoundPlayerOptions } from '../libTypes/audio/S3SoundPlayerOptoins';
 
 export class Sounds {
     public entity: Entity;
@@ -128,7 +128,7 @@ export class Sounds {
         // 現在選択中の soundPlayerから取得する
         return this.soundPlayer.pitch;
     }
-    async startSoundUntilDone(self:Entity) {
+    async startSoundUntilDone(self?:Entity) {
         if ( this.soundPlayer == null) return;
         if(self){
             const me = this;

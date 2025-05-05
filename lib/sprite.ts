@@ -1,6 +1,6 @@
 import { SPEAK_PROPERTY, Bubble } from "./bubble";
 import { Costumes } from "./costumes";
-import { Entity } from "./entity";
+import { Entity, ENTITY_OPTIONS } from "./entity";
 import { Env } from "./env";
 import { libs } from "./libs";
 import { MathUtils } from "./math-utils";
@@ -26,7 +26,7 @@ export class Sprite extends Entity {
     private touchingEdge: boolean;
     private bubbleDrawableID: string;
     private _bubbleTimeout: NodeJS.Timeout|undefined;
-    constructor(name, options = {}) {
+    constructor(name:string, options:ENTITY_OPTIONS = {}) {
         if(typeof name != "string") throw "第一パラメータはスプライトの名前が必要"
         super(name, StageLayering.SPRITE_LAYER, options);
         const stage = playGround.stage;

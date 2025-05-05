@@ -31,17 +31,17 @@ export class Stage extends Entity {
     private _sprites: Sprite[];
     private skinIdx: number;
     public mouse: MouseStatus; 
-    constructor( options:ENTITY_OPTIONS ) {
+    constructor( options?:ENTITY_OPTIONS ) {
         if(typeof options == "string") throw "new Stage() パラメータはオブジェクト型のみ"
         super( "stage", StageLayering.BACKGROUND_LAYER, options );
         this.effect = {
-            color : (options.effect)? ((options.effect.color)? options.effect.color : 0) : 0,
-            mosaic : (options.effect)? ((options.effect.mosaic)? options.effect.mosaic : 0) : 0,
-            fisheye : (options.effect)? ((options.effect.fisheye)? options.effect.fisheye : 0) : 0,
+            color : (options && options.effect)? ((options.effect.color)? options.effect.color : 0) : 0,
+            mosaic : (options && options.effect)? ((options.effect.mosaic)? options.effect.mosaic : 0) : 0,
+            fisheye : (options && options.effect)? ((options.effect.fisheye)? options.effect.fisheye : 0) : 0,
         };
-        this.$_position =  (options.position)? {x: options.position.x, y: options.position.y} : {x:0, y:0};
-        this.direction = (options.direction)? options.direction : 90;
-        this.scale = (options.scale)? {w: options.scale.w, h: options.scale.h} : {w:100, h:100};
+        this.$_position =  (options && options.position)? {x: options.position.x, y: options.position.y} : {x:0, y:0};
+        this.direction = (options && options.direction)? options.direction : 90;
+        this.scale = (options && options.scale)? {w: options.scale.w, h: options.scale.h} : {w:100, h:100};
 
         this.keysCode = [];
         this.keysKey = [];

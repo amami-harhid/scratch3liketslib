@@ -141,5 +141,3 @@ export class Utils {
     }
 
 }
-
-module.exports = Utils;

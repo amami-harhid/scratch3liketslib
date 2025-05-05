@@ -212,10 +212,10 @@ export class PlayGround {
     /**
      * HTMLヘッダーtitle
      */
-    get title() {
+    get title(): string {
         return document.title;
     }
-    set title(_title) {
+    public set title(_title: string) {
         document.title = _title;
     }
 
@@ -402,5 +402,4 @@ export class PlayGround {
         }
     }
 }
-const playGround = PlayGround.getInstance();
-export {playGround};
+export const playGround = PlayGround.getInstance();

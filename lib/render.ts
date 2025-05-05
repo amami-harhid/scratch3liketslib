@@ -2,6 +2,7 @@ import { Canvas } from "./canvas";
 import { Element } from "./element";
 import { playGround } from "./playGround";
 const ScratchRenderer = require('scratch-render');
+//import { ScratchRenderer } from 'scratch-render/dist/node/scratch-render.js';
 import { StageLayering } from "./stageLayering";
 import { S3Renderer } from "../libTypes/render/S3Renderer";
 export class Render {

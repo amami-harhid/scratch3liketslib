@@ -248,5 +248,3 @@ export class Costumes {
         return false;
     }
 };
-
-module.exports = Costumes;

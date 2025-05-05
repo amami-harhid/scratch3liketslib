@@ -2,7 +2,6 @@
   "name": "scratch3liketslib",
   "version": "0.0.1",
   "description": "typescript version scratch3-like library",
-  "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,7 +18,9 @@
   "devDependencies": {
     "@eslint/js": "^9.26.0",
     "@types/node": "^22.15.3",
+    "buffer": "^6.0.3",
     "eslint": "^9.26.0",
+    "events": "^3.3.0",
     "parcel": "^2.14.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.1"
@@ -31,5 +32,10 @@
     "scratch-audio": "^2.0.0",
     "scratch-render": "^2.0.0",
     "twgl.js": "^4.4.0"
+  },
+  "targets": {
+    "default": {
+      "distDir": "./build"
+    }
   }
 }

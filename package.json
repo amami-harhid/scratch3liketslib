@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "typescript version scratch3-like library",
   "main": "./lib",
+  "module": "es2022",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "webpackD": "npx webpack --mode development"
@@ -26,7 +27,6 @@
     "eslint": "^9.26.0",
     "events": "^3.3.0",
     "exports-loader": "^5.0.0",
-    "parcel": "^2.14.4",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.1",

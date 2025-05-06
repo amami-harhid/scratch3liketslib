@@ -1,15 +1,15 @@
 import 'regenerator-runtime';
 import 'core-js';
 import { Buffer } from 'buffer';
-console.log(Buffer);
 
+// Scratch-Render の中で Bufferを使うのだが、
+// Bufferは WEB-Browser上では参照できない。
+// 回避策としてグローバル変数として windowに追加する。
 // @ts-ignore
 window.Buffer = window.Buffer || Buffer
 
-//const {Libs} = require('../lib/libs');
 const playGround = require('../lib/playGround');
 const Libs = playGround.default.Libs;
-//const playGround = PlayGround.getInstance();
 const Element = playGround.default.Element;
 
 Element.insertCss();

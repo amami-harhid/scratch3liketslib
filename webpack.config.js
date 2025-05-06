@@ -7,7 +7,7 @@ module.exports = {
     },
     output: {
       path: path.join(__dirname, '/build'),
-      filename: 'bundle.js', //まとめた結果出力されるファイル名
+      filename: 'main.js', //まとめた結果出力されるファイル名
       library:{
         type: "module",
       }
@@ -16,7 +16,7 @@ module.exports = {
       outputModule: true,
     },
     resolve: {
-      extensions: ['.js'] //拡張子がtsだったらTypescirptでコンパイルする
+      extensions: ['.js']
     },
     devtool: 'source-map',
     module: {

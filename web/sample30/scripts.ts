@@ -3,10 +3,8 @@
  * 質問を出す
  */
 
-import {ScratchLikeLib} from '../../src/index.ts';
-const [Pg, Lib] = [ScratchLikeLib.Pg, ScratchLikeLib.Libs]; // 短縮名にする
-
-console.log(Pg)
+import {playGround, libs} from '../../src/index.ts';
+const [Pg, Lib] = [playGround, libs]; // 短縮名にする
 
 //Pg.title = "【Sample30】変数モニターを表示する"
 

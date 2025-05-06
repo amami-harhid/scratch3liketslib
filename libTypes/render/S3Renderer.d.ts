@@ -36,6 +36,6 @@ export interface S3Renderer {
     updateDrawableVisible(drawableID: string, visible: boolean): void;
     updateTextSkin(skinId: number, type:string, text:string, onSpriteRight:boolean):void;
 
-    s3CreateMonitorSkin(drawableID:string, label:string):void;
+    s3CreateMonitorSkin(drawableID:string, label:string): number;
     getS3Skin(skinId: number):S3MonitorSkin;
 }

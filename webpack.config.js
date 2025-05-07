@@ -16,11 +16,16 @@ module.exports = {
       outputModule: true,
     },
     resolve: {
-      extensions: ['.js']
+      extensions: ['.ts','.js']
     },
     devtool: 'source-map',
     module: {
       rules: [
+        {
+          test: /\.ts$/,
+          exclude: /node_modules/,
+          loader: "ts-loader"
+        },
         {
           test: /\.js$/,
           exclude: /node_modules/,

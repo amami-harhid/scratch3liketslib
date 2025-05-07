@@ -1,10 +1,13 @@
+//@ts-nocheck
 const NowLoading = require('./nowLoading');
-const Element = require('./element');
+//const S3Element = require('./element');
+import {S3Element} from './element';
 const Env = require('./env');
 const FontLoader = require('./importer/fontLoader');
 const ImageLoader = require('./importer/imageLoader');
 const libs = require('./libs');
-const Render = require("./render");
+//const Render = require("./render");
+import { Render } from './render';
 const Runtime = require('./engine/runtime');
 const SoundLoader = require('./importer/soundLoader');
 const Stage = require('./stage');
@@ -24,6 +27,7 @@ class PlayGround {
         }
         return PlayGround._instance;
     }
+    
     constructor () {
         this._render = null;
         this._id = this._generateUUID();
@@ -81,7 +85,7 @@ class PlayGround {
         return libs.default;
     }
     get Element () {
-        return Element;
+        return S3Element;
     }
     get Stage () {
         return Stage;
@@ -213,12 +217,12 @@ class PlayGround {
         this._preload();
         await this._waitUntilPreloadDone();
 
-        this.main = await Element.init();
+        this.main = await S3Element.init();
         const main = this.main;
         if(main == undefined){
             throw 'unable to add main classList';
         }
-        main.classList.add(Element.DISPLAY_NONE);
+        main.classList.add(S3Element.DISPLAY_NONE);
         this._render = new Render();
         this._runtime = new Runtime();
         if(this._render == undefined || this._render.renderer == undefined){
@@ -229,7 +233,7 @@ class PlayGround {
         await this._prepare();
         this._prepaeDone = true;
         await this._setting();
-        await Element.flagInit();
+        await S3Element.flagInit();
         //await this._setting();
 
         this.runningGame = false;
@@ -241,7 +245,7 @@ class PlayGround {
         });
         await Utils.wait(100);
         // Mainタグから非表示のクラスを除去しフラグとキャンバスを表示する
-        main.classList.remove(Element.DISPLAY_NONE);
+        main.classList.remove(S3Element.DISPLAY_NONE);
         // NowLoadingを消す。
         this.mainTmp.remove();
 

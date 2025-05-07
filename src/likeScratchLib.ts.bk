@@ -1,6 +1,8 @@
 import 'regenerator-runtime';
 import 'core-js';
-import { Buffer } from 'buffer';
+import Buffer from 'buffer';
+console.log(Buffer);
+console.log('typescript version');
 
 // Scratch-Render の中で Bufferを使うのだが、
 // Bufferは WEB-Browser上では参照できない。
@@ -8,11 +10,12 @@ import { Buffer } from 'buffer';
 // @ts-ignore
 window.Buffer = window.Buffer || Buffer
 
-const playGround = require('../lib/playGround');
+import playGround from '../lib/playGround';
+//const playGround = require('../lib/playGround');
 const Libs = playGround.default.Libs;
-const S3Element = playGround.default.Element;
+const Element = playGround.default.Element;
 
-S3Element.insertCss();
+Element.insertCss();
 
 const Initialize = async function() {
     await playGround.default._init();

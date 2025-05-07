@@ -1,5 +1,5 @@
 const Canvas = require('./canvas');
-const CSS = require('./css');
+const S3CSS = require('./css');
 const QuestionBoxElement = require('./io/questionBoxElement');
 const threads = require('./threads');
 const ScratchHeader = "scratch3Header";
@@ -14,24 +14,25 @@ const RestartMark = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53M
 const ReloadMark = "data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJfeDMxXzAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgc3R5bGU9IndpZHRoOiAxNnB4OyBoZWlnaHQ6IDE2cHg7IG9wYWNpdHk6IDE7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4gPHN0eWxlIHR5cGU9InRleHQvY3NzIj4gCS5zdDB7ZmlsbDojMzc0MTQ5O30gPC9zdHlsZT4gPGc+IAk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMzg4LjQ4NiwyOTguMDg3bC0wLjA4Mi0wLjAyN2wwLDBsLTAuMTUyLTAuMDQ2Yy0yLjcxNSw4LjU3NC02LjIxMSwxNi43MDItMTAuMzc0LDI0LjM1IAkJYy0wLjEwNiwwLjE4Ny0wLjIxMSwwLjM3NS0wLjMxNywwLjU2MmMtMS44MTYsMy4yOTctMy43OTMsNi40NzYtNS44NTUsOS41ODZjLTAuNDk2LDAuNzQyLTAuOTgsMS40OTItMS40ODgsMi4yMjIgCQljLTEuNzE5LDIuNDg0LTMuNTUsNC44NjctNS40MTQsNy4yMjJjLTAuNzk4LDAuOTkyLTEuNTU1LDIuMDIzLTIuMzc1LDIuOTk2Yy0xLjcxMSwyLjAzNS0zLjUyNywzLjk1Ny01LjM0LDUuODgyIAkJYy0yLjIwNiwyLjMzMi00LjQ4OCw0LjU3NC02Ljg0Myw2Ljc0NmMtMS4zODIsMS4yNzgtMi43MjYsMi41OS00LjE1NiwzLjgwNWMtMS42NjQsMS40MTgtMy40MTQsMi43My01LjE0LDQuMDcgCQljLTEuNDEsMS4wOS0yLjgwOSwyLjE5NS00LjI1OCwzLjIzYy0xLjY0MSwxLjE3Ni0zLjMzMiwyLjI4Mi01LjAyMywzLjM4N2MtMS43NDYsMS4xMzMtMy41MDQsMi4yNDYtNS4yOTcsMy4zMDQgCQljLTEuNDY5LDAuODcxLTIuOTU3LDEuNzE1LTQuNDU3LDIuNTMxYy0yLjM2NywxLjI4Mi00Ljc3NCwyLjQ5Mi03LjIxNCwzLjYzN2MtMS4wMTIsMC40OC0yLjAyLDAuOTc3LTMuMDQzLDEuNDM0IAkJYy0yNi45OTgsMTEuODctNTcuODc2LDE1LjMyNy04OC40MjIsNy45MDZjLTM2Ljc1Ni04LjkyOS02Ny41MjEtMzIuMTk4LTg2LjMyOC02My43MmMtMy40MTgtNS43NS02LjQ3Ny0xMS43NDUtOS4wNS0xOC4wMTggCQlsMjUuNTQ2LTEuNTg2bDE4LjA4OS0xLjAxNmwtMC4xMTctMC4xMDZsMC4yMjYtMC4wMTFsLTkwLjczOC04MC4wOWwtMC4yNjItMC4yMzR2MC4wMDRMODAuNDgxLDIyNmwtNDYuODg5LDUzLjA4NEwwLDMxNi45MzggCQlsMC4xNjQtMC4wMTJsLTAuMTUyLDAuMTcybDQ2LjYxNC0yLjg5OGMyMS4xMzYsNzUuOTQ2LDgxLjI5LDEzNC40MjcsMTU4LjA0OCwxNTMuMDc5YzE3LjA0Niw0LjE0LDM0LjE1NCw2LjEyNSw1MS4wMzcsNi4xMjUgCQljOTEuNzU0LDAsMTc2LjU5Ny01OC43MTYsMjA2LjQ4Ni0xNDguODk2YzAuMjk3LTAuODg2LDAuNjc2LTEuNzM0LDAuOTYxLTIuNjI5aC0wLjAwOGMwLjAxNi0wLjA1LDAuMDM5LTAuMTAyLDAuMDU1LTAuMTUyIAkJTDM4OC40ODYsMjk4LjA4N3oiIHN0eWxlPSJmaWxsOiByZ2IoMjU1LCAwLCAwKTsiPjwvcGF0aD4gCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xMjMuMzc3LDIxMy44NjRsMC4yMjMsMC4wN2wwLDBsMC4xNTIsMC4wNDdjMi43MTUtOC41NzgsNi4yMTEtMTYuNzEsMTAuMzc4LTI0LjM1OCAJCWMwLjA5OC0wLjE4LDAuMjAzLTAuMzU2LDAuMzAxLTAuNTM1YzEuODItMy4zMDksMy44MDUtNi40OTYsNS44NzEtOS42MTdjMC40OTItMC43MzQsMC45NzItMS40NzcsMS40OC0yLjE5OSAJCWMxLjcyMi0yLjQ5MiwzLjU1OC00Ljg4Niw1LjQzLTcuMjQ2YzAuNzkzLTAuOTkyLDEuNTQzLTIuMDEyLDIuMzU5LTIuOTc3YzEuNzE1LTIuMDQ2LDMuNTM5LTMuOTc2LDUuMzY3LTUuOTE0IAkJYzIuMTcxLTIuMjk3LDQuNDI2LTQuNTExLDYuNzQ2LTYuNjU2YzEuNDA2LTEuMzAxLDIuNzgxLTIuNjM3LDQuMjM4LTMuODc0YzEuNjUyLTEuNDA2LDMuMzg2LTIuNzExLDUuMTA1LTQuMDM5IAkJYzEuNDIyLTEuMTAyLDIuODMyLTIuMjE4LDQuMjk3LTMuMjY2YzEuNjMzLTEuMTY4LDMuMzEyLTIuMjY2LDQuOTk2LTMuMzYzYzEuNzU0LTEuMTQ0LDMuNTE5LTIuMjYyLDUuMzI0LTMuMzI0IAkJYzEuNDY1LTAuODY3LDIuOTQxLTEuNzA3LDQuNDM3LTIuNTE5YzIuMzc1LTEuMjg2LDQuNzg5LTIuNTA0LDcuMjM0LTMuNjUyYzEuMDA4LTAuNDczLDIuMDA0LTAuOTY5LDMuMDIzLTEuNDE4IAkJYzI3LjAwMi0xMS44NzgsNTcuODgtMTUuMzM1LDg4LjQzLTcuOTFjMzYuNzIxLDguOTIyLDY3LjQ2NiwzMi4xNTUsODYuMjc4LDYzLjYzOGMzLjQzNyw1Ljc3NCw2LjUxMSwxMS43OTcsOS4wOTcsMTguMDk3IAkJbC0yNS41MywxLjU5bC0xOC4xMDUsMS4wMTJsMC4xMjEsMC4xMDZsLTAuMjI2LDAuMDE1bDkxLjExNyw4MC40MjZsNDcuMjY3LTUzLjUxTDUxMiwxOTUuMDU2bC0wLjE2LDAuMDEybDAuMTQ4LTAuMTY4IAkJbC00Ni42MTQsMi44OThDNDQ0LjIzOCwxMjEuODUzLDM4NC4wODgsNjMuMzY4LDMwNy4zMyw0NC43MkMyMDIuNTU0LDE5LjI2NCw5NS4xODMsNzUuMjkyLDU0Ljk0NiwxNzMuNDU2IAkJYy0wLjEwOSwwLjI2Ni0wLjIxLDAuNTM5LTAuMzIsMC44MDVjLTIuMDc0LDUuMTE3LTQuMDExLDEwLjMxOS01LjcxLDE1LjY1OWMtMC4wMiwwLjA2Ni0wLjA1MSwwLjEyOS0wLjA3LDAuMTk1bDAuMDA0LDAuMDA0IAkJYy0wLjAxNiwwLjA1LTAuMDM1LDAuMDk4LTAuMDUxLDAuMTQ4TDEyMy4zNzcsMjEzLjg2NHoiIHN0eWxlPSJmaWxsOiByZ2IoMjU1LCAwLCAwKTsiPjwvcGF0aD4gPC9nPiA8L3N2Zz4=";
 
 const playGround = require('./playGround');
+//import playGround from './playGround';
 
-class Element {
+export class S3Element {
 
     static main;
     static canvas;
     static textCanvas;
 
-    static get DISPLAY_NONE () {
+    static get DISPLAY_NONE (): string {
         return "displayNone";
     }
-    static getControlGreenFlag() {
+    static getControlGreenFlag(): HTMLElement {
         const element = document.getElementById(ControlGreenFlag);
         if(element){
             return element;
         }
         throw `NOT FOUND Element (id=${ControlGreenFlag})`;
     }
-    static getControlStopMark() {
+    static getControlStopMark(): HTMLElement {
         let element = document.getElementById(ControlStopMark);
         if(element){
             return element;
@@ -65,7 +66,7 @@ class Element {
         const imgGreenFlag = document.createElement("img");
         imgGreenFlag.id = ControlGreenFlag;
         imgGreenFlag.classList.add(ControlGreenFlag);
-        Element.changeToGreenFlag(imgGreenFlag);
+        S3Element.changeToGreenFlag(imgGreenFlag);
         imgGreenFlag.setAttribute("draggable","false");
         menuControl.appendChild(imgGreenFlag);
 
@@ -74,7 +75,7 @@ class Element {
         pauseMark.id = ControlPauseMark;
         pauseMark.classList.add(ControlPauseMark);
         pauseMark.setAttribute("draggable","false");
-        Element.changeToPauseMark(pauseMark);
+        S3Element.changeToPauseMark(pauseMark);
         menuControl.appendChild(pauseMark);
 
         const imgStopMark = document.createElement("img");
@@ -90,7 +91,7 @@ class Element {
         titleSpan.innerText = document.title;
         menuControl.appendChild(titleSpan);
 
-        Element.mainPositioning(main);
+        S3Element.mainPositioning(main);
         return main
     }
     static changeToReloadMark(imgGreenFlag){
@@ -113,7 +114,7 @@ class Element {
         pauseMark.setAttribute("src", RestartMark);
         pauseMark.setAttribute("title", "再開");
     }
-    static mainPositioning(main=Element.main) {
+    static mainPositioning(main=S3Element.main) {
         const scratchHeader = document.getElementById(ScratchHeader);
         main.style.width = `${window.innerWidth}px`;
         main.style.height = `${window.innerHeight}px`;
@@ -123,7 +124,7 @@ class Element {
         const p = playGround.default;
         const canvas = Canvas.createCanvas( );
         canvas.classList.add("likeScratch-canvas");
-        Element.canvas = canvas;
+        S3Element.canvas = canvas;
         p.canvas = canvas;
         //canvas.getContext('2d', { willReadFrequently: true });
         return canvas;
@@ -131,27 +132,27 @@ class Element {
     static createTextCanvas(main) {
         const canvas = Canvas.createTextCanvas();
         canvas.classList.add("likeScratch-text-canvas");
-        Element.textCanvas = canvas;
+        S3Element.textCanvas = canvas;
         playGround.default.textCanvas = canvas;
         return canvas;
     }
     static insertCss() {
         const style = document.createElement('style');
         style.innerHTML = `
-            ${CSS.documentCss}\n\n
-            ${CSS.flagCss}\n\n
-            ${CSS.scratch3Header}\n\n
-            ${CSS.canvasCss}\n\n
-            ${CSS.textCanvasCss}\n\n
-            ${CSS.mainTmpCss}\n\n
-            ${CSS.askCss}\n\n
+            ${S3CSS.documentCss}\n\n
+            ${S3CSS.flagCss}\n\n
+            ${S3CSS.scratch3Header}\n\n
+            ${S3CSS.canvasCss}\n\n
+            ${S3CSS.textCanvasCss}\n\n
+            ${S3CSS.mainTmpCss}\n\n
+            ${S3CSS.askCss}\n\n
         `;
         document.getElementsByTagName('head')[0].appendChild(style);
     }
     static async flagInit() {
-        const controlGreenFlag = Element.getControlGreenFlag();
-        const controlPauseMark = Element.getElementById(ControlPauseMark);
-        const controlStopMark = Element.getControlStopMark();
+        const controlGreenFlag = S3Element.getControlGreenFlag();
+        const controlPauseMark = S3Element.getElementById(ControlPauseMark);
+        const controlStopMark = S3Element.getControlStopMark();
         const me = this;
         let greenFlagClicked = false;
         controlGreenFlag.classList.remove('disableClick');
@@ -179,7 +180,7 @@ class Element {
         });
         //flag.classList.add(Element.DISPLAY_NONE);
 
-        controlPauseMark.classList.add(Element.DISPLAY_NONE)
+        controlPauseMark.classList.add(S3Element.DISPLAY_NONE)
         let restartMarkFlag = false;
         controlPauseMark.addEventListener('click', async function(e){
             e.stopPropagation();
@@ -188,14 +189,14 @@ class Element {
                     playGround.default.threads.startAll();
                     playGround.default.runtime.emit('RUNNING_GAME'); // ON は processの中にある
                 }
-                Element.changeToPauseMark(controlPauseMark);
+                S3Element.changeToPauseMark(controlPauseMark);
                 restartMarkFlag = false;
             }else{
                 if(greenFlagClicked===true) {
                     threads.pauseThreadsInterval();//一時停止
                     playGround.default.runtime.emit('PAUSING_GAME'); // ON は processの中にある
                 }
-                Element.changeToRestartMark(controlPauseMark);
+                S3Element.changeToRestartMark(controlPauseMark);
                 restartMarkFlag = true;
             }
         });
@@ -211,7 +212,7 @@ class Element {
             controlGreenFlag.classList.add('not-running');
             controlGreenFlag.classList.remove('running');
             //process._init();
-            Element.stopAll();
+            S3Element.stopAll();
         });
         const runtime = playGround.default.runtime;
         const EmitID_GREEN_BUTTON_ENABLED = runtime.GREEN_BUTTON_ENABLED;
@@ -262,8 +263,8 @@ class Element {
         throw `Not found element id=${id}`;
     }
     static async init() {
-        const main = Element.createMain(999);
-        Element.createCanvas( );
+        const main = S3Element.createMain(999);
+        S3Element.createCanvas( );
         // text Canvas
         //Element.createTextCanvas(main);
         // normal Canvas
@@ -271,4 +272,4 @@ class Element {
     }
 
 };
-module.exports = Element;
+//module.exports = S3Element;

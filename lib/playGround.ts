@@ -2,20 +2,21 @@
 //const { NowLoading } = await import('./nowLoading');
 //const S3Element = require('./element');
 import {S3Element} from './element';
-const Env = require('./env');
-const FontLoader = require('./importer/fontLoader');
-const ImageLoader = require('./importer/imageLoader');
-import {Libs} from './libs';
-import {Render} from './render';
+import { Env } from './env';
+import { FontLoader } from './importer/fontLoader';
+import { ImageLoader } from './importer/imageLoader';
+import { Libs } from './libs';
+import { Render } from './render';
 //import { Render } from './render';
-const Runtime = require('./engine/runtime');
-const SoundLoader = require('./importer/soundLoader');
-const Sprite = require('./sprite');
-const Stage = require('./stage');
+import { Runtime } from './engine/runtime';
+import { SoundLoader } from './importer/soundLoader';
+import { Sprite } from './sprite';
+import { Stage } from './stage';
 //const Threads = require('./threads');
 import { Threads } from './threads';
 //const Utils = require('./utils');
-import { Utils } from './utils';
+import { Utils } from './util/utils';
+
 export interface IPlayGround {
     runtime: Runtime;
     stage: Stage;
@@ -318,6 +319,7 @@ export class PlayGround implements IPlayGround {
         }else{
             _name = imageUrl.replace(/\.[^.]+$/, '');
         }
+        ImageLoader.libs = this._libs;
         const data = ImageLoader.loadImage(imageUrl, _name, translate);
         this._preloadImagePromise.push(data);
         return data;

@@ -1,12 +1,14 @@
 //@ts-nocheck
-const Canvas = require("./canvas");
+import { Canvas } from './canvas';
 //const S3Element = require("./element");
 import {S3Element} from './element';
 const playGround = require("./playGround");
 //import playGround from './playGround';
 const ScratchRender = require('scratch-render');
 //import { ScratchRender } from 'scratch-render';
-const StageLayering = require("./stageLayering");
+//const StageLayering = require("./stageLayering");
+import { StageLayering } from './stageLayering';
+
 export interface IRender {
     stageResize(w :number , h :nummber ): void;
 }

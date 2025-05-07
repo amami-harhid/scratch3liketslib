@@ -1,30 +1,33 @@
+//@ts-nocheck
 //const Backdrops = require("./backdrops");
 import { Backdrops } from './backdrops';
-const Cast = require("./util/cast");
-const Controls = require("./controls");
+import { Cast } from './util/cast';
+import { Controls, Loop } from './controls';
 //const Costumes = require("./costumes");
 import { Costumes } from './costumes';
 //import { Entity } from './entity';
-const Env = require("./env");
-const EventEmitter = require('events');
-const FunctionChecker = require("./util/functionChecker");
-const Keyboard = require("./io/keyboard");
-const {ImageEffective, SoundOption, RotationStyle} = require('./entityConstant');
-const Loop = require("./controls");
-const MathUtils = require("./math-utils");
+import { Env } from './env';
+//const EventEmitter = require('events');
+import {EventEmitter} from "events";
+import { FunctionChecker } from './util/functionChecker';
+import { Keyboard } from './io/keyboard';
+import { ImageEffective, SoundOption, RotationStyle } from './entityConstant';
+import { MathUtil } from './util/math-util';
 import { Monitors } from './monitor/monitors';
 //const PlayGround = require("./playGround");
 import type { IPlayGround } from './playGround';
-const Render = require("./render");
-//import {Render} from './render';
-const Sounds = require("./sounds");
+//const Render = require("./render");
+import {Render} from './render';
+import { Sounds } from './sounds';
 //const Sprite = require("./sprite");
-import {Sprite} from './sprite';
+import { Sprite } from './sprite';
 //const Stage = require("./stage");
-import {Stage} from './stage';
-const StageLayering = require("./stageLayering");
+import { Stage } from './stage';
+import { StageLayering } from './stageLayering';
+import { SVGParser } from './svgParser/parser';
+//const StageLayering = require("./stageLayering");
 //const Utils = require("./utils");
-import {Utils} from './utils';
+import {Utils} from './util/utils';
 export class Libs {
 
     get Backdrops () {
@@ -68,6 +71,9 @@ export class Libs {
     }
     get MathUtils () {
         return MathUtils;
+    }
+    get svgParser () {
+        return SVGParser.getInstance();
     }
     /**
      * 指定したkeyが押されているとき TRUE

@@ -1,6 +1,6 @@
 //@ts-nocheck
-const Canvas = require('./canvas');
-const S3CSS = require('./css');
+import { Canvas } from './canvas';
+import { S3CSS } from './css';
 //const QuestionBoxElement = require('./io/questionBoxElement');
 import { QuestionBoxElement } from './io/questionBoxElement';
 

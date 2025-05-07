@@ -2,7 +2,7 @@ const EventEmitter = require('events');
 //const playGround = require('../playGround');
 import { PlayGround } from '../playGround';
 //const Utils = require('../utils');
-import { Utils } from '../utils';
+import { Utils } from '../util/utils';
 
 /** div include canvas */
 const CanvasDiv = 'canvasDiv';

@@ -1,11 +1,11 @@
 //@ts-nocheck
-const Env = require("./env");
-const ImageLoader = require("./importer/imageLoader");
-const MathUtil = require("./util/math-util");
+import { Env } from "./env";
+import { ImageLoader } from "./importer/imageLoader";
+import { MathUtil } from "./util/math-util";
 //const playGround = require("./playGround");
-const RotationStyle = require("./entityConstant");
+import { RotationStyle } from "./entityConstant";
 //const Utils = require("./utils");
-import { Utils } from "./utils";
+import { Utils } from "./util/utils";
 export class Costumes {
     static get RotationStyle () {
         return RotationStyle;

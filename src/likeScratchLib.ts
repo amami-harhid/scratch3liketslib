@@ -2,7 +2,7 @@ import 'regenerator-runtime';
 import 'core-js';
 import { Buffer } from 'buffer';
 // Scratch-Render の中で Bufferを使うのだが、
-// Bufferは WEB-Browser上では参照できない。
+// Bufferは WEB-Browser上では直接には参照できないらしい。
 // 回避策としてグローバル変数として windowに追加する。
 window.Buffer = window.Buffer || Buffer
 

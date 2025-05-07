@@ -7,11 +7,15 @@ import { Buffer } from 'buffer';
 window.Buffer = window.Buffer || Buffer
 
 // 【PlayGroundのimport】
+// import { PlayGround } from '../lib/playGround';
+// とした直後は『Buffer is not defined』エラー(GraphemeBreaker.js)が発生
+// PlayGroundのgetInstance() を呼び出せない。
+// 
 // const { PlayGround } = await import('../lib/playGround')
-// import { PlayGround } from ・・・とした直後は
-// PlayGroundのgetInstance() を呼び出せない.
-// await import を使うと呼び出せるが Bundleファイルの分割が起きる
-// PlayGroundはrequire()で読み込むことにする
+// dynamic import を使うとエラーを回避できるが
+// Bundleファイルの分割が起きてしまいBundle結果が１つにならない
+//
+// 【最終案】PlayGroundはrequire()で読み込むことにする
 const { PlayGround } = require('../lib/playGround');
 export const Pg = PlayGround.getInstance();
 export const Lib = Pg.Libs;

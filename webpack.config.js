@@ -5,6 +5,7 @@ module.exports = {
     entry: {
       'likeScratchLib': path.join(__dirname, '/src', 'likeScratchLib.js')
     },
+    target: "web",
     output: {
       path: path.join(__dirname, '/build'),
       filename: 'main.js', //まとめた結果出力されるファイル名

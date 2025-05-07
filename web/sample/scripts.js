@@ -3,9 +3,7 @@
  * 質問を出す
  */
 //const PlayGround = require('../../build/index.js');
-import {PlayGround, Libs} from '../../build/main.js';
-const [Pg, Lib] = [PlayGround, Libs]; // 短縮名にする
-
+import {Pg, Lib} from '../../build/main.js';
 //Pg.title = "【Sample30】変数モニターを表示する"
 
 const Jurassic01 = "Jurassic01";
@@ -28,8 +26,8 @@ Pg.preload = async function preload() {
 }
 Pg.prepare = async function prepare() {
     console.log('scripts.js  prepare start' )
-    console.log(PlayGround)
     // ステージを作る
+    console.log(Lib);
     stage = new Lib.Stage();
     // ステージに背景を追加
     await stage.Image.add( Jurassic01 );

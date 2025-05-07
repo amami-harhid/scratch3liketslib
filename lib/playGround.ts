@@ -1,20 +1,31 @@
 //@ts-nocheck
-const NowLoading = require('./nowLoading');
+//const { NowLoading } = await import('./nowLoading');
 //const S3Element = require('./element');
 import {S3Element} from './element';
 const Env = require('./env');
 const FontLoader = require('./importer/fontLoader');
 const ImageLoader = require('./importer/imageLoader');
-const libs = require('./libs');
-//const Render = require("./render");
-import { Render } from './render';
+import {Libs} from './libs';
+import {Render} from './render';
+//import { Render } from './render';
 const Runtime = require('./engine/runtime');
 const SoundLoader = require('./importer/soundLoader');
+const Sprite = require('./sprite');
 const Stage = require('./stage');
-const threads = require('./threads');
-const Utils = require('./utils');
-
-class PlayGround {
+//const Threads = require('./threads');
+import { Threads } from './threads';
+//const Utils = require('./utils');
+import { Utils } from './utils';
+export interface IPlayGround {
+    runtime: Runtime;
+    stage: Stage;
+    $stageWidth: number;
+    $stageHeight: number;
+    render: Render;
+    canvas: HTMLCanvasElement;
+    
+}
+export class PlayGround implements IPlayGround {
     static _instance;
 
     /**
@@ -27,7 +38,9 @@ class PlayGround {
         }
         return PlayGround._instance;
     }
-    
+    private _render: Render;
+    private _lib: Libs;
+    private _nowLoading: string;
     constructor () {
         this._render = null;
         this._id = this._generateUUID();
@@ -52,6 +65,9 @@ class PlayGround {
         this.setting = null;
         this.draw = null;
         this._textCanvas = null;
+        this._libs = Libs.getInstance();
+        this._libs.p = this;
+        this._nowLoading = '';
     }
     get monitors() {
         return this._monitors;
@@ -82,7 +98,7 @@ class PlayGround {
     // }
 
     get Libs () {
-        return libs.default;
+        return this._libs;
     }
     get Element () {
         return S3Element;
@@ -93,11 +109,14 @@ class PlayGround {
     _generateUUID () {
         return Utils.generateUUID();
     }
+    set NowLoading (nowLoading){
+        this.nowLoading = nowLoading;
+    }
     get NowLoading () {
-        return NowLoading.default;
+        return this.nowLoading;
     }
     get threads () {
-        return threads;
+        return Threads.getInstance();
     }
     get render () {
         if(this._render == undefined) throw 'render undefined error';
@@ -160,7 +179,7 @@ class PlayGround {
      * @returns 
      */
     getRenderRate() {
-        return libs.renderRate;        
+        return this.libs.renderRate;        
     }
 
 
@@ -200,7 +219,7 @@ class PlayGround {
     }
 
     async _init() {
-
+        S3Element.p = this;
         // Now Loading 準備 START
         const mainTmp = document.createElement('main');
         this.mainTmp = mainTmp;
@@ -217,6 +236,7 @@ class PlayGround {
         this._preload();
         await this._waitUntilPreloadDone();
 
+        S3Element.p = this;
         this.main = await S3Element.init();
         const main = this.main;
         if(main == undefined){
@@ -319,7 +339,7 @@ class PlayGround {
         return font;
     }
     spriteClone( src, callback ) {
-        if( src instanceof libs.Sprite ) {
+        if( src instanceof Sprite ) {
             const _src = src;
             _src.$clone().then( async( c ) =>{
                 if( callback ) {
@@ -369,7 +389,7 @@ class PlayGround {
     }
 
     $stopAll() {
-        threads.stopThreadsInterval();
+        this.threads.stopThreadsInterval();
     }
 
     
@@ -381,4 +401,5 @@ class PlayGround {
 }
 //const playGround = PlayGround.getInstance();
 
-export default PlayGround.getInstance()
+//module.exports = PlayGround;
+//export default PlayGround.getInstance()

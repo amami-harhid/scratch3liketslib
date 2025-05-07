@@ -2,9 +2,7 @@
 import { Env } from "./env";
 import { ImageLoader } from "./importer/imageLoader";
 import { MathUtil } from "./util/math-util";
-//const playGround = require("./playGround");
 import { RotationStyle } from "./entityConstant";
-//const Utils = require("./utils");
 import { Utils } from "./util/utils";
 export class Costumes {
     static get RotationStyle () {

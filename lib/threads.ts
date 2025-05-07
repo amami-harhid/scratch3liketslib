@@ -1,20 +1,5 @@
 //@ts-nocheck
 const INTERVAL = 1000/33;
-
-// declare type THREAD_OBJ = {
-//     threadId:string | null, 
-//     entity:Entity|null,
-//     entityId:string|null,
-//     f:AsyncGenerator<any, void, any>|null,
-//     doubleRunable: boolean,
-//     forceExit: boolean,
-//     status: string,
-//     done: boolean|undefined,
-//     originalF:CallableFunction|null,
-//     childObj: THREAD_OBJ | null,
-//     parentObj: THREAD_OBJ | null,
-// }
-
 export class Threads {
     static instance;
     static playGround;
@@ -46,10 +31,10 @@ export class Threads {
     get STOP(){
         return 'stop';
     }
-    get THROW_STOP_THIS_SCRIPTS(){
+    static get THROW_STOP_THIS_SCRIPTS(){
         return "throwStopThisScripts";
     } 
-    get THROW_FORCE_STOP_THIS_SCRIPTS(){
+    static get THROW_FORCE_STOP_THIS_SCRIPTS(){
         return "throwForceStopThisScripts";
     } 
     getTopThreadObj(threadId){
@@ -239,7 +224,7 @@ export class Threads {
                             //}
                             // waitするメソッドがあるときは
                         }).catch(e=>{
-                            if(_obj.entity && (e==me.THROW_STOP_THIS_SCRIPTS || e==me.THROW_FORCE_STOP_THIS_SCRIPTS)){
+                            if(_obj.entity && (e==Threads.THROW_STOP_THIS_SCRIPTS || e==Threads.THROW_FORCE_STOP_THIS_SCRIPTS)){
                                 // この例外はthrowせずに objは抹消する（再実行しない）
                                 _obj.forceExit = true;
                                 _obj.status = me.STOP;

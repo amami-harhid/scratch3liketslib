@@ -1,24 +1,7 @@
 //@ts-nocheck
-//const Backdrops = require('./backdrops');
-//const Canvas = require('./canvas');
 import { Entity } from "./entity";
-//const {Libs} = require("./libs");
-//const playGround = require("./playGround").default;
-//const QuestionBoxElement = require("./io/questionBoxElement");
 import { QuestionBoxElement } from "./io/questionBoxElement";
 import { StageLayering } from "./stageLayering";
-
-// declare type MouseStatus = {
-//     scratchX:number, 
-//     scratchY:number, 
-//     x:number, 
-//     y:number, 
-//     down: boolean, 
-//     pageX: number, 
-//     pageY: number, 
-//     clientX: number, 
-//     clientY: number
-// }
 
 export class Stage extends Entity {
     constructor( options ) {

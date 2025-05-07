@@ -1,29 +1,19 @@
 //@ts-nocheck
-//const PlayGround = require('./playGround');
-//import PlayGround from './playGround';
 import { Canvas } from './canvas';
-//const {Controls, Loop} = require('./controls');
 import { Controls, Loop } from './controls';
 import {S3Element} from './element';
 
-//const S3Element = require('./element');
-//const EntityProxyExt = require('./util/entityProxyExt');
 import { EntityProxyExt } from './util/entityProxyExt';
 import { Env } from './env';
 import { EventEmitter } from "events";
 import { FunctionChecker } from './util/functionChecker';
-//const {Libs} = require('./libs');
 import { Libs } from './libs';
 import { MathUtil } from './util/math-util';
 import { Sounds } from './sounds';
 import { Speech } from './speech/text2Speech';
-//const Threads = require('./threads');
 import { Threads } from './threads';
-//const Utils = require('./utils');
 import { Utils } from './util/utils';
-
-const {ImageEffective, SoundOption, RotationStyle} = require('./entityConstant');
-
+import { ImageEffective, SoundOption, RotationStyle } from './entityConstant';
 
 export class Entity extends EventEmitter {
     static clickFirstRegist = true;

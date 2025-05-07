@@ -1,16 +1,10 @@
 //@ts-nocheck
-//const Bubble = require("./bubble");
 import { Bubble } from "./bubble";
-//const Costumes = require("./costumes");
 import { Entity } from "./entity";
 import { Env } from "./env";
 import { MathUtil } from "./util/math-util";
-//const playGround = require("./playGround");
-//const QuestionBoxElement = require("./io/questionBoxElement");
 import { QuestionBoxElement } from "./io/questionBoxElement";
-//const StageLayering = require("./stageLayering");
 import { StageLayering } from "./stageLayering";
-//const Utils = require("./utils");
 import { Utils } from "./util/utils";
 import { RotationStyle } from "./entityConstant";
 

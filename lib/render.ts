@@ -1,14 +1,8 @@
 //@ts-nocheck
-import { Canvas } from './canvas';
-//const S3Element = require("./element");
-import {S3Element} from './element';
-const playGround = require("./playGround");
-//import playGround from './playGround';
 const ScratchRender = require('scratch-render');
-//import { ScratchRender } from 'scratch-render';
-//const StageLayering = require("./stageLayering");
+import { Canvas } from './canvas';
+import { S3Element } from './element';
 import { StageLayering } from './stageLayering';
-
 export interface IRender {
     stageResize(w :number , h :nummber ): void;
 }
@@ -34,7 +28,7 @@ export class Render implements IRender{
         return Render.W * Render.WHRate;
     }
     static get p() {
-        return playGround.getInstance();
+        return this.p;
     }
     static set p(playGround){
         this.p = playGround;

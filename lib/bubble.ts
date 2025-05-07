@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { PlayGround } from "./playGround";
+import type { PlayGround } from "./playGround";
 import { StageLayering } from "./stageLayering";
 import { uid } from "./uid";
 

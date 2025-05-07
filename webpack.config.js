@@ -3,7 +3,7 @@ module.exports = {
     mode: 'development',
     context: `${__dirname}/src`,
     entry: {
-      'likeScratchLib': path.join(__dirname, '/src', 'likeScratchLib.js')
+      'likeScratchLib': path.join(__dirname, '/src', 'likeScratchLib.ts')
     },
     target: "web",
     output: {
@@ -33,7 +33,7 @@ module.exports = {
           loader: "babel-loader"
         },
         {
-          test: /\src\/*\.js$/,
+          test: /\src\/*\.ts$/,
           loader: 'exports-loader',
           options: {
             exports: 'playGround',

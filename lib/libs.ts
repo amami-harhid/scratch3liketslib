@@ -1,33 +1,23 @@
 //@ts-nocheck
-//const Backdrops = require("./backdrops");
 import { Backdrops } from './backdrops';
 import { Cast } from './util/cast';
 import { Controls, Loop } from './controls';
-//const Costumes = require("./costumes");
 import { Costumes } from './costumes';
-//import { Entity } from './entity';
 import { Env } from './env';
-//const EventEmitter = require('events');
-import {EventEmitter} from "events";
+import { EventEmitter } from "events";
 import { FunctionChecker } from './util/functionChecker';
 import { Keyboard } from './io/keyboard';
 import { ImageEffective, SoundOption, RotationStyle } from './entityConstant';
 import { MathUtil } from './util/math-util';
 import { Monitors } from './monitor/monitors';
-//const PlayGround = require("./playGround");
-import type { IPlayGround } from './playGround';
-//const Render = require("./render");
-import {Render} from './render';
+import { PlayGround } from './playGround';
+import { Render } from './render';
 import { Sounds } from './sounds';
-//const Sprite = require("./sprite");
 import { Sprite } from './sprite';
-//const Stage = require("./stage");
 import { Stage } from './stage';
 import { StageLayering } from './stageLayering';
 import { SVGParser } from './svgParser/parser';
-//const StageLayering = require("./stageLayering");
-//const Utils = require("./utils");
-import {Utils} from './util/utils';
+import { Utils } from './util/utils';
 export class Libs {
 
     get Backdrops () {
@@ -273,13 +263,11 @@ export class Libs {
         if(this._p == undefined) throw 'playGround is undefined';
         return this._p;
     }
-    set p ( playGround: IPlayGround) {
+    set p ( playGround: PlayGround) {
         this._p = playGround;
     }
-    public _p : IPlayGround | undefined;
+    public _p : PlayGround | undefined;
     constructor () {
         this._p = undefined;
     }
 }
-
-//module.exports = Libs;

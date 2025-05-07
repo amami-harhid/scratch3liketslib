@@ -17,16 +17,7 @@ import { Threads } from './threads';
 //const Utils = require('./utils');
 import { Utils } from './util/utils';
 
-export interface IPlayGround {
-    runtime: Runtime;
-    stage: Stage;
-    $stageWidth: number;
-    $stageHeight: number;
-    render: Render;
-    canvas: HTMLCanvasElement;
-    
-}
-export class PlayGround implements IPlayGround {
+export class PlayGround {
     static _instance;
 
     /**

@@ -1,5 +1,7 @@
 import 'regenerator-runtime';
 import 'core-js';
+import { Version } from './version';
+
 const { Buffer } = await import(/* webpackMode: "eager" */ 'buffer');
 // 【Buffer】
 // BufferはNodeAPIでありNODEの外では利用できない仕様である
@@ -36,6 +38,7 @@ const S3Element = Pg.Element;
 S3Element.insertCss();
 
 const Initialize = async function() {
+    console.log(`Library Version = "${Version}"`);
     await Pg._init();
 };
 

@@ -1,4 +1,6 @@
 const path = require('path');
+const webpack = require('webpack');
+const version = JSON.stringify(require('./package.json').version);
 module.exports = {
     mode: 'development',
     context: `${__dirname}/src`,
@@ -20,17 +22,18 @@ module.exports = {
       extensions: ['.ts','.js']
     },
     devtool: 'source-map',
+    plugins: [new webpack.DefinePlugin({ __s3_version__: version })],
     module: {
       rules: [
         {
           test: /\.ts$/,
           exclude: /node_modules/,
-          loader: "ts-loader"
+          loader: "ts-loader",
         },
         {
           test: /\.js$/,
           exclude: /node_modules/,
-          loader: "babel-loader"
+          loader: "babel-loader",
         },
         {
           test: /\src\/*\.ts$/,

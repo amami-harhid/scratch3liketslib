@@ -1,6 +1,6 @@
 {
   "name": "scratch3liketslib",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "typescript version scratch3-like library",
   "main": "./lib",
   "module": "es2022",

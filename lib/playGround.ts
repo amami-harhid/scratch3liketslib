@@ -1,5 +1,4 @@
 //@ts-nocheck
-import {S3Element} from './element';
 import { Env } from './env';
 import { FontLoader } from './importer/fontLoader';
 import { ImageLoader } from './importer/imageLoader';
@@ -11,6 +10,8 @@ import { Sprite } from './sprite';
 import { Stage } from './stage';
 import { Threads } from './threads';
 import { Utils } from './util/utils';
+
+import { S3Element } from './element';
 
 export class PlayGround {
     static _instance;

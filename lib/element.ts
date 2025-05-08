@@ -1,6 +1,5 @@
 //@ts-nocheck
 import { Canvas } from './canvas';
-import { S3CSS } from './css';
 import { QuestionBoxElement } from './io/questionBoxElement';
 
 const ScratchHeader = "scratch3Header";
@@ -140,7 +139,7 @@ export class S3Element {
         S3Element.p.textCanvas = canvas;
         return canvas;
     }
-    static insertCss() {
+    static insertCss(S3CSS) {
         const style = document.createElement('style');
         style.innerHTML = `
             ${S3CSS.documentCss}\n\n

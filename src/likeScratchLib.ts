@@ -22,7 +22,8 @@ window.Buffer = window.Buffer || Buffer
 // await importにすると webpackでは出力ファイルが自動的に
 // 分割されてしまう。分割は好きではないので 
 // 「/* webpackMode: "eager" */」をつけて eagerモードにする
-
+// SVGデータ埋め込み版のCSS(97K)、await importする
+const { S3CSS } = await import(/* webpackMode: "eager" */ '../lib/css');
 const { PlayGround } = await import(/* webpackMode: "eager" */ '../lib/playGround');
 // 【PlayGroundのimport】
 // PlayGroundの中では多数のimportを行っている。
@@ -35,7 +36,7 @@ const { PlayGround } = await import(/* webpackMode: "eager" */ '../lib/playGroun
 export const Pg = PlayGround.getInstance();
 export const Lib = Pg.Libs;
 const S3Element = Pg.Element;
-S3Element.insertCss();
+S3Element.insertCss(S3CSS);
 
 const Initialize = async function() {
     console.log(`Library Version = "${Version}"`);

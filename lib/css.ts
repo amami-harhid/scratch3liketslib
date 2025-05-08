@@ -1,3 +1,4 @@
+const {NowLoadingSVG} = await import(/* webpackMode: "eager" */ './assets/nowLoading');
 export const S3CSS = {
     documentCss : `
 * { 
@@ -174,7 +175,7 @@ html, body{
 `,
     mainTmpCss : `
 .nowLoading {
-    background-image: url(https://amami-harhid.github.io/scratch3LikeJs/web/assets/NowLoading.svg);
+    background-image: url('${NowLoadingSVG}');
     background-repeat: no-repeat;
     background-position: center;
     background-color: #f0f0f0;

@@ -1,6 +1,10 @@
-//@ts-nocheck
+/**
+ * QuestionBoxElement
+ */
 import { EventEmitter } from 'events';
+import { Entity } from '../entity';
 import { PlayGround } from '../playGround';
+import { Sprite } from '../sprite';
 import { Utils } from '../util/utils';
 
 /** div include canvas */
@@ -27,7 +31,15 @@ const QuestionSubmitButtonIcon = 'question_question-submit-button-icon';
 const ButtonIconSrc = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMjBweCIgaGVpZ2h0PSIyMHB4IiB2aWV3Qm94PSIwIDAgMjAgMjAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDUxLjIgKDU3NTE5KSAtIGh0dHA6Ly93d3cuYm9oZW1pYW5jb2RpbmcuY29tL3NrZXRjaCAtLT4KICAgIDx0aXRsZT5HZW5lcmFsL0NoZWNrPC90aXRsZT4KICAgIDxkZXNjPkNyZWF0ZWQgd2l0aCBTa2V0Y2guPC9kZXNjPgogICAgPGRlZnM+CiAgICAgICAgPHBhdGggZD0iTTcuODYxNDQwNTksMTUuNDAyODc3NiBDNy40MzUyNjg1OSwxNS40MDI4Nzc2IDcuMDA5MDk2NTgsMTUuMjM5NzMzNiA2LjY4NDQ3MzM4LDE0LjkxNTExMDQgTDMuNDg4MTgzMzYsMTEuNzE4ODIwNCBDMi44MzcyNzIyMSwxMS4wNjc5MDkzIDIuODM3MjcyMjEsMTAuMDE1Nzk3MSAzLjQ4ODE4MzM2LDkuMzY0ODg2IEM0LjEzOTA5NDUsOC43MTM5NzQ4NSA1LjE5MTIwNjY0LDguNzEzOTc0ODUgNS44NDIxMTc3OCw5LjM2NDg4NiBMNy44NjE0NDA1OSwxMS4zODQyMDg4IEwxNC4xNTkxMzA4LDUuMDg4MTgzMzYgQzE0LjgwODM3NzIsNC40MzcyNzIyMSAxNS44NjIxNTQsNC40MzcyNzIyMSAxNi41MTMwNjUyLDUuMDg4MTgzMzYgQzE3LjE2MjMxMTYsNS43Mzc0Mjk3NyAxNy4xNjIzMTE2LDYuNzkxMjA2NjQgMTYuNTEzMDY1Miw3LjQ0MjExNzc4IEw5LjAzODQwNzgsMTQuOTE1MTEwNCBDOC43MTM3ODQ2LDE1LjIzOTczMzYgOC4yODc2MTI1OSwxNS40MDI4Nzc2IDcuODYxNDQwNTksMTUuNDAyODc3NiIgaWQ9InBhdGgtMSI+PC9wYXRoPgogICAgPC9kZWZzPgogICAgPGcgaWQ9IkdlbmVyYWwvQ2hlY2siIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPgogICAgICAgIDxtYXNrIGlkPSJtYXNrLTIiIGZpbGw9IndoaXRlIj4KICAgICAgICAgICAgPHVzZSB4bGluazpocmVmPSIjcGF0aC0xIj48L3VzZT4KICAgICAgICA8L21hc2s+CiAgICAgICAgPHVzZSBpZD0iQ2hlY2siIGZpbGw9IiM1NzVFNzUiIHhsaW5rOmhyZWY9IiNwYXRoLTEiPjwvdXNlPgogICAgICAgIDxnIGlkPSJDb2xvci9XaGl0ZSIgbWFzaz0idXJsKCNtYXNrLTIpIiBmaWxsPSIjRkZGRkZGIj4KICAgICAgICAgICAgPHJlY3QgaWQ9IkNvbG9yIiB4PSIwIiB5PSIwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiPjwvcmVjdD4KICAgICAgICA8L2c+CiAgICA8L2c+Cjwvc3ZnPg==';
 
 export class QuestionBoxElement extends EventEmitter {
-    /** emitId (input complete) */
+    /** 質問ボックス完了フラグ */
+    private static QuestionBoxForceComplete: boolean;
+    /** 入力テキスト */
+    private static TextInputComplete: string;
+    private forceComplete: boolean;
+    private playGround: PlayGround;
+    /**
+     * @constructor
+     */
     constructor() {
         super();
         this.forceComplete = false;
@@ -36,11 +48,12 @@ export class QuestionBoxElement extends EventEmitter {
     /**
      * DOM(StageStageOverlays)が存在しなくなるまで待つ
      * 強制打ち切りの場合は false を返す
+     * @param entity 
      * @returns Promise<void>
      */
     async askWait(entity) {
         const me = this;
-        return new Promise(async resolve=>{
+        return new Promise<boolean>(async resolve=>{
             const f = function() {
                 me.forceComplete = true;
             }
@@ -69,10 +82,10 @@ export class QuestionBoxElement extends EventEmitter {
     }
     /**
      * entity がStageなのかを判定する
-     * @param {*} entity 
-     * @returns Stageの場合 True
+     * @param {Entity} entity 
+     * @returns {boolean} Stageの場合 True
      */
-    static isStage(entity) {
+    static isStage(entity: Entity) : boolean {
         if(entity['isSprite'] &&  entity.isSprite() === false ){
             return true;
         }
@@ -83,13 +96,19 @@ export class QuestionBoxElement extends EventEmitter {
      * @param {*} entity 
      * @returns Spriteの場合 True
      */
-    static isSprite(entity) {
+    static isSprite(entity: Entity) {
         if(entity['isSprite'] &&  entity.isSprite() === true ){
             return true;
         }
         return false;
     }
-    async ask( entity, text ) {
+    /**
+     * 質問を表示して答えの入力を待つ
+     * @param entity {Entity}
+     * @param text {string}
+     * @returns 答え {Promise<string>}
+     */
+    async ask( entity: Entity, text: string ) : Promise<string>{
         this.forceComplete = false;
         const result = await this.askWait(entity);
         // @ts-ignore : this.forceComplete is changed to true in askWait(). 
@@ -128,7 +147,7 @@ export class QuestionBoxElement extends EventEmitter {
                 questionContainer.appendChild(questionLabel);
             }else if( QuestionBoxElement.isSprite(entity) ){
                 // スプライトの場合
-                const sprite = entity;
+                const sprite = entity as Sprite;
                 sprite.$say(text);
             }    
         }
@@ -191,11 +210,12 @@ export class QuestionBoxElement extends EventEmitter {
     }
     /**
      * 質問を消す
+     * @param entity {Entity}
      */
-    static removeAsk(entity) {
-        if( entity && QuestionBoxElement.isSprite(entity) ){
+    static removeAsk(entity: Entity) : void {
+        if( entity && QuestionBoxElement.isSprite(entity)){
             // スプライトの場合、フキダシを消す
-            const sprite = entity;
+            const sprite = entity as Sprite;
             sprite.$say('');
         }
         const _stageOverlays = document.getElementById(StageOverlays);

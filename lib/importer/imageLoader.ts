@@ -1,7 +1,7 @@
 /**
  * ImageLoader
  */
-import { Libs } from "lib/libs";
+import { Libs } from "../libs";
 export class ImageLoader {
     static libs: Libs;
     /**
@@ -43,7 +43,7 @@ export class ImageLoader {
         return false;
     }
     /**
-     * 
+     * イメージをロードする
      * @param {string} image 
      * @param {string} name 
      * @param {{x:number,y:number}} translate 

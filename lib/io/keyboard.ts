@@ -1,5 +1,13 @@
-//@ts-nocheck
+/**
+ * Keyboard
+ */
 import { Cast } from '../util/cast';
+import { Runtime } from '../engine/runtime';
+
+declare type POST_DATA = {
+    isDown: boolean,
+    key : string,
+};
 
 /**
  * Names used internally for keys used in scratch, also known as "scratch keys".
@@ -19,47 +27,49 @@ export const KEY_NAME = {
  * An array of the names of scratch keys.
  * @type {string[]}
  */
-const KEY_NAME_LIST = Object.keys(KEY_NAME).map(name => KEY_NAME[name]);
+const KEY_NAME_LIST:string[] = Object.keys(KEY_NAME).map(name => KEY_NAME[name]);
 
 export class Keyboard {
     /** スペースキー */
-    static get SPACE() {
+    static get SPACE() :string{
         return KEY_NAME.SPACE;
     }
     /** 左矢印キー */
-    static get LEFT() {
+    static get LEFT() :string{
         return KEY_NAME.LEFT;
     }
     /** 右矢印キー */
-    static get RIGHT() {
+    static get RIGHT() :string{
         return KEY_NAME.RIGHT;
     }
     /** 上向き矢印キー */
-    static get UP() {
+    static get UP() :string{
         return KEY_NAME.UP;
     }
     /** 下向き矢印キー */
-    static get DOWN() {
+    static get DOWN() :string{
         return KEY_NAME.DOWN;
     }
     /** エスケープキー */
-    static get ESCAPE() {
+    static get ESCAPE() :string{
         return KEY_NAME.ESCAPE;
     }
-
-    constructor (runtime) {
-        /**
-         * List of currently pressed scratch keys.
-         */
+    private _keysPressed: string[];
+    private _runtime: Runtime;
+    private _spaceStopPropagation: boolean;
+    /**
+     * 
+     * @param runtime {Runtime}
+     */
+    constructor (runtime: Runtime) {
+        /** 押されているキーのリスト */
         this._keysPressed = [];
-        /**
-         * Reference to the owning Runtime.
-         */
+        /** 自身のRuntime */
         this._runtime = runtime;
 
         const me = this;
-        document.addEventListener('keydown', e => {
-            const data = {
+        document.addEventListener('keydown', (e:KeyboardEvent) => {
+            const data: POST_DATA = {
                 isDown: true,
                 key : e.key,
             };
@@ -71,8 +81,8 @@ export class Keyboard {
                 }    
             }
         })
-        document.addEventListener('keyup', e => {
-            const data = {
+        document.addEventListener('keyup', (e:KeyboardEvent) => {
+            const data : POST_DATA = {
                 isDown: false,
                 key : e.key,
             };
@@ -92,7 +102,7 @@ export class Keyboard {
      * @param  {string} keyString the input key string.
      * @return {string} the corresponding Scratch key, or an empty string.
      */
-    _keyStringToScratchKey (keyString) {
+    _keyStringToScratchKey (keyString: string) : string {
         keyString = Cast.toString(keyString);
         // Convert space and arrow keys to their Scratch key names.
         //console.log('keyString', keyString);
@@ -119,10 +129,11 @@ export class Keyboard {
 
     /**
      * Convert from a block argument to a Scratch key name.
-     * @param  {string} keyArg the input arg.
+     * 
+     * @param  {string|number} keyArg the input arg.
      * @return {string} the corresponding Scratch key.
      */
-    _keyArgToScratchKey (keyArg) {
+    _keyArgToScratchKey (keyArg: string|number) : string {
         // If a number was dropped in, try to convert from ASCII to Scratch key.
         if (typeof keyArg === 'number') {
             // Check for the ASCII range containing numbers, some punctuation,
@@ -161,9 +172,9 @@ export class Keyboard {
 
     /**
      * Keyboard DOM event handler.
-     * @param  {object} data Data from DOM event.
+     * @param  {POST_DATA} data Data from DOM event.
      */
-    postData (data) {
+    postData (data: POST_DATA) : void {
         if (!data.key) return;
         const scratchKey = this._keyStringToScratchKey(data.key);
         if (scratchKey === '') return;
@@ -181,11 +192,11 @@ export class Keyboard {
     }
 
     /**
-     * key down state for a specified key.
-     * @param  {Any} keyArg key argument.
+     * キーが押されているかを判定する
+     * @param  {string|number} keyArg key argument.
      * @return {boolean} Is the specified key down?
      */
-    keyIsDown (keyArg) {
+    keyIsDown (keyArg: string|number) :boolean{
         if (!keyArg || keyArg === 'any') {
             return this._keysPressed.length > 0;
         }

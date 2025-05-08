@@ -1,10 +1,34 @@
-//@ts-nocheck
+/**
+ * Monitor
+ */
 import { Entity } from "../entity";
 import { StageLayering } from "../stageLayering";
 import { Utils } from "../util/utils";
-
+import { S3MonitorSkin } from "./s3MonitorSkin";
+import type { IScratchRenderer } from "../render/IScratchRenderer";
+import type { TPosition, TScale, TDistance, TBounds} from "../common/typeCommon";
 export class Monitor extends Entity {
-    constructor(monitorId, label){
+    static Events = {
+        DROP_START: 'DropStart',
+        DROP_COMPLETE: 'DropComplete'    
+    }
+    private _monitorId: string;
+    private _label: string;
+    private _visible: boolean;
+    private _skin: S3MonitorSkin|undefined;
+    private _skinId: number;
+    private renderer: IScratchRenderer;
+    private _position: TPosition;
+    private _scale: TScale;
+    private _dropEnabled: boolean;
+    private _moveDistance: TDistance;
+    private _preDraw: boolean;
+    /**
+     * @constructor
+     * @param monitorId {string}
+     * @param label {string}
+     */
+    constructor(monitorId: string, label: string){
         super(monitorId, StageLayering.MONITOR_LAYER);
         this._monitorId = monitorId;
         this._label = label;        
@@ -17,7 +41,6 @@ export class Monitor extends Entity {
         this._dropEnabled = true;
         this._moveDistance = {};
         this._preDraw = false;
-//        this._playGround = Libs.getInstance().p;
         const me = this;
         const runtime = this.playGround.runtime;
         if(runtime == undefined) throw 'Not Found runtime error';
@@ -196,7 +219,3 @@ export class Monitor extends Entity {
         }
     }
 }
-Monitor.Events = {
-    DROP_START: 'DropStart',
-    DROP_COMPLETE: 'DropComplete'    
-};

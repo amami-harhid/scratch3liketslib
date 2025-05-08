@@ -1,9 +1,12 @@
+/**
+ * SoundLoader
+ */
 export class SoundLoader {
 
     /**
-     * 
-     * @param {string} sound 
-     * @param {string} name 
+     * サウンドをロードする
+     * @param sound {string} 
+     * @param name {string} 
      * @return {{name:string, data:Uint8Array<ArrayBuffer>}} data
      */
     static async loadSound(sound, name){

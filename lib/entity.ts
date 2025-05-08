@@ -14,6 +14,7 @@ import { Speech } from './speech/text2Speech';
 import { Threads } from './threads';
 import { Utils } from './util/utils';
 import { ImageEffective, SoundOption, RotationStyle } from './entityConstant';
+import { PlayGround } from './playGround';
 
 export class Entity extends EventEmitter {
     static clickFirstRegist = true;
@@ -25,6 +26,9 @@ export class Entity extends EventEmitter {
     get SOUND_FORCE_STOP (){
         return "sound_force_stop";
     }
+    protected render: Render;
+    protected playGround: PlayGround;
+    protected drawableID: string;
     constructor (name, layer, options = {} ){
         super();
         this._libs = Libs.getInstance();
@@ -1282,4 +1286,5 @@ export class Entity extends EventEmitter {
             runtime.emit(EmitID_GREEN_MARK_BUTTON_ENABLED);    
         }
     }
+
 };

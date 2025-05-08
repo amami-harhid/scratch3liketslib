@@ -2,9 +2,9 @@
  * QuestionBoxElement
  */
 import { EventEmitter } from 'events';
-import { Entity } from '../entity';
+import { Entity } from '../entity/entity';
 import { PlayGround } from '../playGround';
-import { Sprite } from '../sprite';
+import { Sprite } from '../entity/sprite';
 import { Utils } from '../util/utils';
 
 /** div include canvas */

@@ -1,9 +1,14 @@
-//@ts-nocheck
+/**
+ * Monitors
+ */
 import { Monitor } from "./monitor";
-import { Libs } from "../libs";
+import { Libs } from "../controls/libs";
 import { S3MonitorSkin } from "./s3MonitorSkin";
+import { PlayGround } from "../playGround";
 
 export class Monitors {
+    private _monitors: Monitor[];
+    private _playGround: PlayGround;
     /**
      * @constructor
      */
@@ -12,7 +17,13 @@ export class Monitors {
         this._playGround = Libs.getInstance().p;
         const render = this._playGround.render;
         const renderer = render.renderer;
-        function s3CreateMonitorSkin(drawableID, label) {
+        /**
+         * (独自関数) monitorSkin を作成する
+         * @param drawableID {string}
+         * @param label {string}
+         * @returns SkinId (number)
+         */
+        function s3CreateMonitorSkin(drawableID: String, label: string) :number {
             const skinId = renderer._nextSkinId++;
             const newSkin = new S3MonitorSkin(skinId, renderer, label );
             const drawable = renderer._allDrawables[drawableID];
@@ -20,7 +31,12 @@ export class Monitors {
             drawable.skin = newSkin;
             return skinId;
         }
-        function getS3Skin(skinId) {
+        /**
+         * (独自関数) monitorSkin を取得する
+         * @param skinId {number}
+         * @returns {S3MonitorSkin}
+         */
+        function getS3Skin(skinId: number) : S3MonitorSkin{
             return renderer._allSkins[skinId];
         }
         renderer.s3CreateMonitorSkin = s3CreateMonitorSkin;

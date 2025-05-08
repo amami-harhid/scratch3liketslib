@@ -17,6 +17,11 @@ export declare type TScale = {
     w: number,
     h: number,
 }
+/** サイズ */
+export declare type TSize = {
+    width: number,
+    height: number,
+}
 /** 距離 */
 export declare type TDistance = {
     x?: number,
@@ -28,4 +33,10 @@ export declare type TBounds = {
     bottom: number,
     left: number,
     right: number,
+}
+
+export declare type TVec3 = {
+    x: number,
+    y: number,
+    z: number,
 }

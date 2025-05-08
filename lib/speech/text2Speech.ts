@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { SoundLoader } from '../importer/soundLoader';
-import { Sounds } from '../sounds';
+import { Sounds } from '../sounds/sounds';
 
 //const SERVER = 'https://synthesis-service.scratch.mit.edu';
 

@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { Threads } from '../threads';
+import { Threads } from '../controls/threads';
 /**
  * エンティティのプロキシ拡張
  */

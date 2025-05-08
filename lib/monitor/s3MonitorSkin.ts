@@ -1,9 +1,13 @@
-//@ts-nocheck
+/**
+ * S3MonitorSkin
+ */
+const twgl = require('twgl.js');
 import { EventEmitter } from "events";
 import { S3CanvasMeasurementProvider } from "./s3CanvasMeasurementProvider";
 import { MonitorRenderingConstants } from "./s3RenderConstants";
 import { S3Silhouette } from "./s3Silhouette";
-const twgl = require('twgl.js');
+import type { IRenderWebGL } from "../render/IRenderWebGL";
+import type { TSize, TVec3 } from "../common/typeCommon";
 
 const MonitorStyle = {
     MAX_LINE_WIDTH: 480,  // stage width
@@ -31,6 +35,19 @@ const MonitorStyle = {
     }
 
 };
+declare type TUniform = {
+    /**
+     * The nominal (not necessarily current) size of the current skin.
+     * @type {Array<number>}
+     */
+    u_skinSize: number[],
+
+    /**
+     * The actual WebGL texture object for the skin.
+     * @type {WebGLTexture}
+     */
+    u_skin: WebGLTexture|null,    
+}
 export class S3MonitorSkin extends EventEmitter {
     static Events = {
         /**
@@ -40,16 +57,46 @@ export class S3MonitorSkin extends EventEmitter {
          */
         WasAltered: 'WasAltered'
     };
+    private _id: number;
+    private _renderer: IRenderWebGL;
+    private _size: number[];
+    private _renderedScale: number;
+    //private _lines: string[]; // <-- 未使用なので削除
+    private _title: string;
+    private _textAreaSize: TSize;
+    private _textDirty: boolean;
+    private _textureDirty: boolean;
+    private _rotationCenter: TVec3;
+    private _texture: WebGLTexture|null;
+    private _uniforms: TUniform;
+    private _silhouette: S3Silhouette;
+    private _x: number;
+    private _y: number;
+    private _visible: boolean;
+    private _canvas: HTMLCanvasElement|null;
+    private _measurementProvider: S3CanvasMeasurementProvider|null;
+
+    /** adding */
+    private _dropping: boolean;
+    private _text: string;
+    private titleLineWidth: number;
+    private valueLineWidth: number;
+    private actualValueLineWidth: number;
+
+    private _ctx: CanvasRenderingContext2D;
+
     /**
      * Create a S3Skin, which stores and/or generates textures for use in rendering.
-     * @param {int} id - The unique ID for this S3Skin.
-     * @param {!RenderWebGL} renderer - The renderer which will use this skin.
-     * @param {string} title - monitor title
+     * @param {number} id - The unique ID for this S3Skin.
+     * @param renderer {RenderWebGL} - The renderer which will use this skin.
+     * @param title {string} - monitor title
+     * @param x {number}
+     * @param y {number}
      * @constructor
      */
-    constructor (id, renderer, title, x=0, y=0) {
+    constructor (id: number, renderer: IRenderWebGL, title: string, x:number=0, y:number=0) {
         super();
-        /** @type {int} */
+        /** @type {number} */
         this._id = id;
         /** @type {RenderWebGL} */
         this._renderer = renderer;
@@ -60,7 +107,7 @@ export class S3MonitorSkin extends EventEmitter {
         /** @type {number} */
         this._renderedScale = 0;
         /** @type {Array<string>} */
-        this._lines = [];
+        //this._lines = [];
         /** @type {string} */
         this._title = title;
         /** @type {object} */
@@ -310,7 +357,8 @@ export class S3MonitorSkin extends EventEmitter {
         const _titleLineWidth = this.measurementProvider.measureText(''+this._title);
         const titleLineWidth = _titleLineWidth;
         this.titleLineWidth = titleLineWidth;
-        this._lines = [''+ this._text]; // always one line, not used line breaker
+        //this._lines = [''+ this._text]; // always one line, not used line breaker
+        
         // Measure width of longest line to avoid extra-wide bubbles
         const _valueLineWidth = this.measurementProvider.measureText(''+this._text);
         const valueLineWidth = Math.max(_valueLineWidth, MonitorStyle.MIN_WIDTH);
@@ -483,16 +531,4 @@ export class S3MonitorSkin extends EventEmitter {
         return this._silhouette.isTouchingLinear(vec);
     }
 
-}
-/**
- * These are the events which can be emitted by instances of this class.
- * @enum {string}
- */
-S3MonitorSkin.Events = {
-    /**
-     * This constant value is same as Skin class
-     * Emitted when anything about the Skin has been altered, such as the appearance or rotation center.
-     * @event S3MonitorSkin.event:WasAltered
-     */
-    WasAltered: 'WasAltered'
 };

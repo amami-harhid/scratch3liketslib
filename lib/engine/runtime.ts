@@ -5,12 +5,12 @@ import { EventEmitter } from 'events';
 // Virtual I/O devices.
 import { Keyboard } from '../io/keyboard';
 
-import type {IScratchRenderer} from '../render/IScratchRenderer';
+import type {IRenderWebGL} from '../render/IRenderWebGL';
 declare type IODEVICES = {
     keyboard: Keyboard,
 }
 export class Runtime extends EventEmitter {
-    private renderer:IScratchRenderer|undefined;
+    private renderer:IRenderWebGL|undefined;
     private ioDevices: IODEVICES;
     /**
      * @constructor
@@ -18,7 +18,7 @@ export class Runtime extends EventEmitter {
     constructor() {
         super();
         //this._target = [];
-        /** @type IRenderer */
+        /** @type Renderer */
         this.renderer;
         const ioDevice:IODEVICES = {
             keyboard: new Keyboard(this),
@@ -31,9 +31,9 @@ export class Runtime extends EventEmitter {
     }
     /**
      * ScratchRendererを設定する
-     * @param renderer {IScratchRenderer}
+     * @param renderer {IRenderWebGL}
      */
-    attachRenderer ( renderer: IScratchRenderer ) {
+    attachRenderer ( renderer: IRenderWebGL ) {
         this.renderer = renderer;
     }
     /**

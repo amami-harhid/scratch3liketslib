@@ -1,15 +1,20 @@
-//@ts-nocheck
 /**
+ * S3Silhouette (ScratchRenderからの流用)
+ * 正直、Silhouetteの用途は理解できていないが、Skinには必要なので用意したもの。
+ * 
  * @fileoverview
  * A representation of a Skin's silhouette that can test if a point on the skin
  * renders a pixel where it is drawn.
  */
+import type { TVec3 } from "../common/typeCommon";
+
+declare type TBitMapData = ImageData|HTMLCanvasElement|HTMLImageElement;
 
 /**
  * <canvas> element used to update Silhouette data from skin bitmap data.
- * @type {CanvasElement}
+ * @type {HTMLCanvasElement}
  */
-let __SilhouetteUpdateCanvas;
+let __SilhouetteUpdateCanvas: HTMLCanvasElement;
 
 // Optimized Math.min and Math.max for integers;
 // taken from https://web.archive.org/web/20190716181049/http://guihaire.com/code/?p=549
@@ -51,7 +56,7 @@ const __cornerWork = [
  * @param {Uint8ClampedArray} dst A color 4b space.
  * @return {Uint8ClampedArray} The dst vector.
  */
-const getColor4b = (shilhouse, x, y, dst) => {
+const getColor4b = (shilhouse:S3Silhouette, x:number, y:number, dst:Uint8ClampedArray):Uint8ClampedArray => {
     // Clamp coords to edge, matching GL_CLAMP_TO_EDGE.
     // (See github.com/LLK/scratch-render/blob/954cfff02b08069a082cbedd415c1fecd9b1e4fb/src/BitmapSkin.js#L88)
     x = intMax(0, intMin(x, shilhouse.width - 1));
@@ -80,7 +85,7 @@ const getColor4b = (shilhouse, x, y, dst) => {
  * @param {Uint8ClampedArray} dst A color 4b space.
  * @return {Uint8ClampedArray} The dst vector.
  */
-const getPremultipliedColor4b = (shilhouse, x, y, dst) => {
+const getPremultipliedColor4b = (shilhouse: S3Silhouette, x: number, y: number, dst: Uint8ClampedArray): Uint8ClampedArray => {
     // Clamp coords to edge, matching GL_CLAMP_TO_EDGE.
     x = intMax(0, intMin(x, shilhouse.width - 1));
     y = intMax(0, intMin(y, shilhouse.height - 1));
@@ -94,11 +99,14 @@ const getPremultipliedColor4b = (shilhouse, x, y, dst) => {
 };
 
 export class S3Silhouette {
-
-    get width() {
+    private _width: number;
+    private _height: number;
+    private _colorData: Uint8ClampedArray|null;
+    private _getColor: (shilhouse: S3Silhouette, x: number, y: number, dst: Uint8ClampedArray) => Uint8ClampedArray;
+    get width(): number {
         return this._width;
     }
-    get height() {
+    get height(): number {
         return this._height;
     }
     get data(){
@@ -134,13 +142,13 @@ export class S3Silhouette {
 
     /**
      * Update this silhouette with the bitmapData for a skin.
-     * @param {ImageData|HTMLCanvasElement|HTMLImageElement} bitmapData An image, canvas or other element that the skin
+     * @param {TBitMapData} bitmapData An image, canvas or other element that the skin
      * @param {boolean} isPremultiplied True if the source bitmap data comes premultiplied (e.g. from readPixels).
      * rendering can be queried from.
      */
-    update (bitmapData, 
-                isPremultiplied = false) {
-        let imageData;
+    update (bitmapData: TBitMapData, 
+                isPremultiplied: boolean = false): void {
+        let imageData: ImageData;
         if (bitmapData instanceof ImageData) {
             // If handed ImageData directly, use it directly.
             imageData = bitmapData;
@@ -183,7 +191,7 @@ export class S3Silhouette {
      * @param {Uint8ClampedArray} dst The memory buffer to store the value in. (4 bytes)
      * @returns {Uint8ClampedArray} dst
      */
-    colorAtNearest (vec, dst) {
+    colorAtNearest? (vec:TVec3, dst: Uint8ClampedArray): Uint8ClampedArray {
         return this._getColor(
             this,
             Math.floor(vec[0] * (this._width - 1)),
@@ -199,7 +207,7 @@ export class S3Silhouette {
      * @param {Uint8ClampedArray} dst The memory buffer to store the value in. (4 bytes)
      * @returns {Uint8ClampedArray} dst
      */
-    colorAtLinear (vec, dst) {
+    colorAtLinear? (vec: TVec3, dst: Uint8ClampedArray): Uint8ClampedArray {
         const x = vec[0] * (this._width - 1);
         const y = vec[1] * (this._height - 1);
 
@@ -229,7 +237,7 @@ export class S3Silhouette {
      * @param {twgl.v3.Vec3} vec A texture coordinate.
      * @return {boolean} If the nearest pixel has an alpha value.
      */
-    isTouchingNearest (vec) {
+    isTouchingNearest (vec: TVec3): boolean {
         if (!this._colorData) return false;
         return getPoint(
             this,
@@ -244,7 +252,7 @@ export class S3Silhouette {
      * @param {twgl.v3.Vec3} vec A texture coordinate.
      * @return {boolean} Any of the pixels have some alpha.
      */
-    isTouchingLinear (vec) {
+    isTouchingLinear (vec: TVec3): boolean {
         if (!this._colorData) return false;
         const x = Math.floor(vec[0] * (this._width - 1));
         const y = Math.floor(vec[1] * (this._height - 1));
@@ -257,9 +265,9 @@ export class S3Silhouette {
     /**
      * Get the canvas element reused by Silhouettes to update their data with.
      * @private
-     * @return {CanvasElement} A canvas to draw bitmap data to.
+     * @return {HTMLCanvasElement} A canvas to draw bitmap data to.
      */
-    static _updateCanvas () {
+    static _updateCanvas () : HTMLCanvasElement{
         if (typeof __SilhouetteUpdateCanvas === 'undefined') {
             __SilhouetteUpdateCanvas = document.createElement('canvas');
         }

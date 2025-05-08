@@ -1,7 +1,7 @@
 /**
  * ImageLoader
  */
-import { Libs } from "../libs";
+import { Libs } from "../controls/libs";
 export class ImageLoader {
     static libs: Libs;
     /**

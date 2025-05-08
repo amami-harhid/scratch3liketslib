@@ -2,16 +2,16 @@
 import { Env } from './env';
 import { FontLoader } from './importer/fontLoader';
 import { ImageLoader } from './importer/imageLoader';
-import { Libs } from './libs';
-import { Render } from './render';
+import { Libs } from './controls/libs';
+import { Render } from './render/render';
 import { Runtime } from './engine/runtime';
 import { SoundLoader } from './importer/soundLoader';
-import { Sprite } from './sprite';
-import { Stage } from './stage';
-import { Threads } from './threads';
+import { Sprite } from './entity/sprite';
+import { Stage } from './entity/stage';
+import { Threads } from './controls/threads';
 import { Utils } from './util/utils';
 
-import { S3Element } from './element';
+import { S3Element } from './elements/element';
 
 export class PlayGround {
     static _instance;
@@ -106,10 +106,16 @@ export class PlayGround {
     get threads () {
         return Threads.getInstance();
     }
-    get render () {
+    /**
+     * render を取得する
+     */
+    get render () : Render {
         if(this._render == undefined) throw 'render undefined error';
         return this._render;
     }
+    /**
+     * render を設定する
+     */
     set render( render ) {
         // _init() の中で設定される。
         this._render = render;

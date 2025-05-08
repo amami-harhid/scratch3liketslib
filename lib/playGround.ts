@@ -232,6 +232,8 @@ export class PlayGround {
         }
         main.classList.add(S3Element.DISPLAY_NONE);
         this._render = new Render();
+        Render.p = this;
+
         this._runtime = new Runtime();
         if(this._render == undefined || this._render.renderer == undefined){
             throw 'unable to execute attachRenderer';

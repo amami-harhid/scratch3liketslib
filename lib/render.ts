@@ -2,6 +2,7 @@
 const ScratchRender = require('scratch-render');
 import { Canvas } from './canvas';
 import { S3Element } from './element';
+import { PlayGround } from './playGround';
 import { StageLayering } from './stageLayering';
 export interface IRender {
     stageResize(w :number , h :nummber ): void;
@@ -28,13 +29,14 @@ export class Render implements IRender{
         return Render.W * Render.WHRate;
     }
     static get p() {
-        return this.p;
+        return Render.playGround;
     }
     static set p(playGround){
-        this.p = playGround;
+        Render.playGround = playGround;
     }
     public stageWidth: number;
     public stageHeight: number;
+    static private playGround: PlayGround|undefined;
     constructor(layerGroups = StageLayering.LAYER_GROUPS) {
         this.layerGroups = layerGroups;
         this.stageWidth = 0;

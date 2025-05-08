@@ -2,7 +2,7 @@
  * sample28
  * 質問を出す
  */
-import {Pg, Lib} from '../../build/main.js';
+import {Pg, Lib} from '../../build/index.js';
 
 Pg.title = "【Sample30】変数モニターを表示する"
 

@@ -10,7 +10,7 @@ module.exports = {
     target: "web",
     output: {
       path: path.join(__dirname, '/build'),
-      filename: 'main.js', //まとめた結果出力されるファイル名
+      filename: 'index.js', //まとめた結果出力されるファイル名
       library:{
         type: "module",
       }

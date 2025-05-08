@@ -1,21 +1,29 @@
-//@ts-nocheck
+/**
+ * Bubble
+ */
 import type { PlayGround } from "../playGround";
-import { StageLayering } from "./stageLayering";
 import { uid } from "../util/uid";
+import type { IRenderWebGL } from "../render/IRenderWebGL";
+import { Sprite } from "./sprite";
+import { StageLayering } from "./stageLayering";
+import { TScale } from "lib/common/typeCommon";
 
 export type BubbleState = {
-    drawableID : string,
+    drawableID : number,
     skinId: number,
     text : string,
     type : 'say'|'think',
     onSpriteRight : boolean,
-    uid : '', // <--- 使用用途不明
+    uid : string, // <--- 使用用途不明
 }
 export class Bubble{
     private p: PlayGround;
     private bubbleState: BubbleState;
     private sprite: any;
-    constructor( sprite ) {
+    private renderer: IRenderWebGL|null;
+    private _scale: TScale;
+    private _direction: number;
+    constructor( sprite: Sprite ) {
         this.p = sprite.playGround;
         this.bubbleState = this._createBubbleState();
         this.sprite = sprite;
@@ -27,10 +35,10 @@ export class Bubble{
         this._scale = {w:100, h:100};
         this._direction = 90;
     }
-    _createBubbleState() :BubbleState{
-        const state = {
-            drawableID : '',
-            skinId: 0,
+    _createBubbleState() :BubbleState {
+        const state: BubbleState = {
+            drawableID : -1, // 未設定
+            skinId: -1, // 未設定
             text : '',
             type : 'say',
             onSpriteRight : true,
@@ -38,19 +46,25 @@ export class Bubble{
         }
         return state;
     }
-    isBubbleActive() {
+    isBubbleActive(): boolean {
         if( this.bubbleState.uid == null) {
             return false;
         }
         return true;
     }
-    get direction()  {
+    get direction() : number {
         return this._direction;
     }
-    set direction( _direction ) {
+    set direction( _direction: number ) {
         this._direction = _direction;
     }
-    setScale( w, h ) {
+    /**
+     * Bubbleスケールを設定する
+     * @param w {number} - 横スケール(%).
+     * @param h {number} - 縦スケール(%).
+     * @returns 
+     */
+    setScale( w: number, h: number ): void {
         if( w == 0 || h == 0 ) {
             // ゼロスケールではDrawできないので回避する。
             return;
@@ -180,7 +194,7 @@ export class Bubble{
         }
     }
     destroyBubble() {
-       if(this.renderer && this.isBubbleActive() && this.bubbleState.drawableID.length > 0) {
+       if(this.renderer && this.isBubbleActive() && this.bubbleState.drawableID > 0) {
             this.renderer.destroyDrawable( this.bubbleState.drawableID, StageLayering.SPRITE_LAYER);
             this.renderer.destroySkin( this.bubbleState.skinId )
             this._createBubbleState();    

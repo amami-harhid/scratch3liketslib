@@ -5,6 +5,7 @@ import { Monitor } from "./monitor";
 import { Libs } from "../controls/libs";
 import { S3MonitorSkin } from "./s3MonitorSkin";
 import { PlayGround } from "../playGround";
+import type { IRenderWebGL } from "lib/render/IRenderWebGL";
 
 export class Monitors {
     private _monitors: Monitor[];
@@ -19,11 +20,11 @@ export class Monitors {
         const renderer = render.renderer;
         /**
          * (独自関数) monitorSkin を作成する
-         * @param drawableID {string}
+         * @param drawableID {number}
          * @param label {string}
          * @returns SkinId (number)
          */
-        function s3CreateMonitorSkin(drawableID: String, label: string) :number {
+        function s3CreateMonitorSkin(drawableID: number, label: string) :number {
             const skinId = renderer._nextSkinId++;
             const newSkin = new S3MonitorSkin(skinId, renderer, label );
             const drawable = renderer._allDrawables[drawableID];

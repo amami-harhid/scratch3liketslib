@@ -28,6 +28,7 @@ export declare type TDistance = {
     y?: number,
 }
 
+/** 上下左右の大きさ */
 export declare type TBounds = {
     top: number,
     bottom: number,
@@ -35,6 +36,7 @@ export declare type TBounds = {
     right: number,
 }
 
+/** Vec3 */
 export declare type TVec3 = {
     x: number,
     y: number,

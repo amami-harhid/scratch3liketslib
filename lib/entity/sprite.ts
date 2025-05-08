@@ -7,6 +7,7 @@ import { QuestionBoxElement } from "../io/questionBoxElement";
 import { StageLayering } from "./stageLayering";
 import { Utils } from "../util/utils";
 import { RotationStyle } from "./entityConstant";
+import { PlayGround } from "lib/playGround";
 
 export class Sprite extends Entity {
     constructor(name, options = {}) {
@@ -221,7 +222,7 @@ export class Sprite extends Entity {
         }
     }
     $moveSteps(steps) {
-        const radians = MathUtils.degToRad(90 - this.$_direction);
+        const radians = MathUtil.degToRad(90 - this.$_direction);
         const dx = steps * Math.cos(radians);
         const dy = steps * Math.sin(radians);
         this.$setXY( this.$_position.x + dx, this.$_position.y + dy );
@@ -371,7 +372,7 @@ export class Sprite extends Entity {
         }
 //        this._ifOnEdgeBoundsFlag = true;// 端にふれている。
         // Point away from the nearest edge.
-        const radians = MathUtils.degToRad(90 - this.$_direction);
+        const radians = MathUtil.degToRad(90 - this.$_direction);
         let dx = Math.cos(radians);
         let dy = -Math.sin(radians);
         if (nearestEdge === 'left') {
@@ -383,7 +384,7 @@ export class Sprite extends Entity {
         } else if (nearestEdge === 'bottom') {
             dy = 0 - Math.max(0.2, Math.abs(dy));
         }
-        const newDirection = MathUtils.radToDeg(Math.atan2(dy, dx)) + 90;
+        const newDirection = MathUtil.radToDeg(Math.atan2(dy, dx)) + 90;
         this.$_direction = newDirection;
         // Keep within the stage.
         if(this.costumes ) {
@@ -638,7 +639,7 @@ export class Sprite extends Entity {
         let dx = target.$_position.x - this.$_position.x;
         let dy = target.$_position.y - this.$_position.y;
 
-        let direction = 90 - MathUtils.radToDeg(Math.atan2(dy, dx));
+        let direction = 90 - MathUtil.radToDeg(Math.atan2(dy, dx));
         if(direction > 180) {
             direction -= 360;
         }

@@ -16,7 +16,7 @@ const soup_ = '!#%()*+,-./:;=?@[]^_`{|}~' +
  * 87 characters ^ 20 length > 128 bits (better than a UUID).
  * @return {string} A globally unique ID string.
  */
-export const uid = function () {
+export const uid = function () :string {
     const length = 20;
     const soupLength = soup_.length;
     // @type {string[]}

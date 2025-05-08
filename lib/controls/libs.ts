@@ -1,4 +1,6 @@
-//@ts-nocheck
+/**
+ * Libs
+ */
 import { Backdrops } from '../entity/backdrops';
 import { Cast } from '../util/cast';
 import { Controls, Loop } from './controls';
@@ -59,8 +61,8 @@ export class Libs {
     get Monitors () {
         return Monitors;
     }
-    get MathUtils () {
-        return MathUtils;
+    get MathUtil () {
+        return MathUtil;
     }
     get svgParser () {
         return SVGParser.getInstance();

@@ -1,16 +1,24 @@
-//@ts-nocheck
+/**
+ * Sounds
+ */
 const AudioEngine = require('scratch-audio');
 import { Entity } from '../entity/entity';
 import { SoundLoader } from '../importer/soundLoader';
+import type { IAudioEngine, TSoundPlayerOption } from './IAudioEngine';
 import { SoundPlayer } from './soundPlayer';
 
 export class Sounds {
-    constructor(entity) {
+    private audioEngine: IAudioEngine;
+    private entity: Entity;
+    private soundPlayer: SoundPlayer|undefined;
+    private soundPlayers: Map<string, SoundPlayer>;
+    private soundIdx: number;
+    constructor(entity: Entity) {
         this.entity = entity;
         this.audioEngine = new AudioEngine();
-        this.soundPlayers = new Map();
+        this.soundPlayers = new Map<string,SoundPlayer>();
         this.soundPlayer = undefined;
-        this.soundIdx = 0;
+        this.soundIdx = -1;
     }
     // ==== 未使用 =====
     // async importSound( sound ) {
@@ -23,7 +31,7 @@ export class Sounds {
      * @param {Uint8Array<ArrayBuffer>} soundData 
      * @param {*} options 
      */
-    async setSound( name, soundData, options = {} ) {
+    async setSound( name: string, soundData: Uint8Array<ArrayBuffer>, options:TSoundPlayerOption = {} ): Promise<void> {
         // audioEngine.decodeSoundPlayerの引数は {data} の形にする。変数名は dataでないといけない。
         const data = soundData;
         const _soundPlayer = await this.audioEngine.decodeSoundPlayer({data});
@@ -148,11 +156,11 @@ export class Sounds {
      * @param {Entity} self 
      * @returns {Promise<void>}
      */
-    async startSoundUntilDone(self) {
+    async startSoundUntilDone(self: Entity): Promise<void> {
         if ( this.soundPlayer == null) return;
         if(self){
             const me = this;
-            return new Promise(async resolve=>{
+            return new Promise<void>(async resolve=>{
                 // Entity.$speechStopImmediately()でEmitされる
                 if(me.soundPlayer == undefined) {
                     resolve();

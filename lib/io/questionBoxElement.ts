@@ -32,7 +32,7 @@ const ButtonIconSrc = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmN
 
 export class QuestionBoxElement extends EventEmitter {
     /** 質問ボックス完了フラグ */
-    private static QuestionBoxForceComplete: boolean;
+    public static QuestionBoxForceComplete: boolean;
     /** 入力テキスト */
     private static TextInputComplete: string;
     private forceComplete: boolean;

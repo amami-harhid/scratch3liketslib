@@ -4,6 +4,7 @@ import { Canvas } from '../elements/canvas';
 import { S3Element } from '../elements/element';
 import { PlayGround } from '../playGround';
 import { StageLayering } from '../entity/stageLayering';
+import { IRenderWebGL } from './IRenderWebGL';
 
 export class Render {
     static get WHRate() {
@@ -34,6 +35,7 @@ export class Render {
     }
     public stageWidth: number;
     public stageHeight: number;
+    private _renderer: IRenderWebGL;
     static private playGround: PlayGround|undefined;
     constructor(layerGroups = StageLayering.LAYER_GROUPS) {
         this.layerGroups = layerGroups;
@@ -71,9 +73,13 @@ export class Render {
             this._renderer.setLayerGroupOrdering(this.layerGroups);
             this.stageResize(w,h);    
         }    
-}
-
-    createDrawable(layer)  {
+    }
+    /**
+     * 
+     * @param layer {StageLayering} - layer name
+     * @returns {number} - drawableID.
+     */
+    createDrawable(layer: StageLayering) : number {
         if(this._renderer){
             const drawableID = this._renderer.createDrawable(layer);
             return drawableID;    

@@ -27,8 +27,8 @@ export class Entity extends EventEmitter {
         return "sound_force_stop";
     }
     protected render: Render;
-    protected playGround: PlayGround;
-    protected drawableID: string;
+    public playGround: PlayGround;
+    protected drawableID: number;
     constructor (name, layer, options = {} ){
         super();
         this._libs = Libs.getInstance();
@@ -1065,7 +1065,7 @@ export class Entity extends EventEmitter {
                 const dx = targetX - this.$_position.x;
                 const dy = targetY - this.$_position.y;
         
-                let direction = 90 - MathUtils.radToDeg(Math.atan2(dy, dx));
+                let direction = 90 - MathUtil.radToDeg(Math.atan2(dy, dx));
                 if(direction > 180) {
                     direction -= 360;
                 }
@@ -1081,7 +1081,7 @@ export class Entity extends EventEmitter {
         const targetY = mousePosition.y;
         const dx = targetX - this.$_position.x;
         const dy = targetY - this.$_position.y;
-        let direction = 90 - MathUtils.radToDeg(Math.atan2(dy, dx));
+        let direction = 90 - MathUtil.radToDeg(Math.atan2(dy, dx));
         if(direction > 180) {
             direction -= 360;
         }

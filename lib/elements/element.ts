@@ -1,4 +1,6 @@
-//@ts-nocheck
+/**
+ * Element
+ */
 import { Canvas } from './canvas';
 import { QuestionBoxElement } from '../io/questionBoxElement';
 

@@ -1,6 +1,17 @@
-//@ts-nocheck
+/**
+ * SoundPlayer
+ */
+import type { IAudioEngine, IScratchSoundPlayer, TSoundPlayerOption, TEffectChain} from "./IAudioEngine";
 export class SoundPlayer {
-    constructor(name, _soundPlayer, options = {}) {
+    private _name : string;
+    private _soundPlayer: IScratchSoundPlayer;
+    private _options: TSoundPlayerOption;
+    private _volume: number;
+    private _pitch: number;
+    private connectDone: boolean;
+    private _effects: TEffectChain;
+
+    constructor(name: string, _soundPlayer:IScratchSoundPlayer , options: TSoundPlayerOption = {}) {
         this._name = name;
         this._soundPlayer = _soundPlayer;
         this._options = options;

@@ -1,22 +1,31 @@
-//@ts-nocheck
+/**
+ * Threads
+ */
 const INTERVAL = 1000/33;
+import { PlayGround } from "../playGround";
+import type { TThreadObj } from "./TThreadObj";
 export class Threads {
-    static instance;
-    static playGround;
+    static instance: Threads;
+    static playGround: PlayGround;
     static getInstance(){
         if(!Threads.instance) {
             Threads.instance = new Threads();
         }
         return Threads.instance;
     }
-    static set p(playGround) {
+    static set p(playGround: PlayGround) {
         Threads.playGround = playGround;
     }
-    static get p(){
+    static get p(): PlayGround{
         return Threads.playGround;
     }
+    //private stopper: boolean;
+    private _running: boolean;
+    private _startSwitch: boolean;
+    private _intervalId: NodeJS.Timeout|null;
+    private threadArr: TThreadObj[];
     constructor(){
-        this.stopper = false;
+        //this.stopper = false;
         this.threadArr = [];
         this._intervalId = null;
         this._running = false;
@@ -150,7 +159,7 @@ export class Threads {
         this._running = false;
     }
     stopAll(){
-        this.stopper = true;
+        //this.stopper = true;
         this._running = false;
     }
     stopOtherScripts(entity){
@@ -201,7 +210,7 @@ export class Threads {
             }    
         }
     }
-    async interval(me) {
+    async interval(me: Threads) {
         for(const obj of me.threadArr){
             if(obj.entity && !obj.entity.isAlive()){ // Entity生きていないとき
                 obj.forceExit = true; // 強制終了とする
@@ -217,7 +226,7 @@ export class Threads {
                     _obj.status = me.RUNNING;
                     try{
                         _obj.f.next().then((rslt)=>{
-                            _obj.done = rslt.done;
+                            _obj.done = rslt.done || false;
                             _obj.status = me.YIELD;
                             //if(_obj.entity.getStopThisScriptSwitch() === true) {
                             //    _obj.status = me.STOP;
@@ -254,7 +263,7 @@ export class Threads {
         }
         // 終了したOBJは削除する
         // @type {THREAD_OBJ[]}
-        const _arr = [];
+        const _arr:TThreadObj[] = [];
         for(const obj of me.threadArr){
             if(!(obj.forceExit || obj.done) ) {
                 _arr.push(obj);

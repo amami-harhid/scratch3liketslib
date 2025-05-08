@@ -1,6 +1,10 @@
+/**
+ * Loopクラス / Controlsクラス
+ * このクラスは両方とも参照されてはいるが、利用用途はない。
+ * 落ち着いたころに参照をはずしたい。もったいないけど。
+ */
 import { Utils } from "../util/utils";
 import { Threads } from "./threads";
-
 
 export class Loop {
     static get threads(){

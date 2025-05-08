@@ -122,9 +122,9 @@ export class Monitor extends Entity {
     /**
      * 文字列型
      */    
-    get text () {
+    get text (): string{
         if(this._skin)
-            return this._skin.value;
+            return `${this._skin.value}`;
 
         throw `skin が undefined です`;
 
@@ -142,16 +142,23 @@ export class Monitor extends Entity {
     /**
      * 数値型
      */    
-    get value () {
-        if(this._skin)
-            return this._skin.value;
+    get value (): number{
+        if(this._skin){
+            const v = this._skin.value;
+            if(Utils.isNumber(v)){
+                const _v = v as number;
+                return _v;
+            }else{
+                throw `value(${v}) は数値ではありません`
+            }
+        }
         throw `skin が undefined です`;
         
     }
     /**
      * 数値型
      */    
-    set value( _value ){
+    set value( _value: number ){
         if(Utils.isNumber(_value)){
             if( this._skin )
                 this._skin.value = _value;

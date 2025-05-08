@@ -1,4 +1,7 @@
-//@ts-nocheck
+/**
+ * 
+ */
+import { Entity } from 'lib/entity/entity';
 import { SoundLoader } from '../importer/soundLoader';
 import { Sounds } from '../sounds/sounds';
 
@@ -72,6 +75,11 @@ export const GENDER = class {
     }
 }
 export class Speech {
+    private voice: string;
+    private language: string;
+    private gender: string;
+    private cache;
+    private locale: string|null;
     constructor() {
         this.voice = ALTO_ID;
         this.language =  JAPANESE_ID;
@@ -163,7 +171,7 @@ export class Speech {
         return JAPANESE_ID;
     }
 
-    speech(entity, words, properties={}) {
+    speech(entity:Entity, words:string, properties={}) {
         // 128文字までしか許容しないとする
         const text = encodeURIComponent(words.substring(0, 128));
         let path = `${SERVER_HOST}/synth?locale=${this.locale}&gender=${this.gender}&text=${text}`;
@@ -180,14 +188,14 @@ export class Speech {
         }
     }
     
-    _speechPlay(entity, name, data, properties) {
+    _speechPlay(entity:Entity, name:string, data, properties) {
         const sounds = new Sounds(entity);
         sounds.setSound(name, data, properties).then(_=>{
             sounds.play();
         });
     }
 
-    async speechAndWait(entity, words, properties={}) {
+    async speechAndWait(entity:Entity, words:string, properties={}) {
         // 128文字までしか許容しないとする
         const text = encodeURIComponent(words.substring(0, 128));
         let path = `${SERVER_HOST}/synth?locale=${this.locale}&gender=${this.gender}&text=${text}`;
@@ -200,11 +208,12 @@ export class Speech {
         await this._speechPlayUntilDone(entity, sound.name, sound.data, properties);
     }
     
-    async _speechPlayUntilDone(entity, name, data, properties) {
+    async _speechPlayUntilDone(entity:Entity, name:string, data, properties) {
         const sounds = new Sounds(entity);
         await sounds.setSound(name, data, properties);
         await sounds.startSoundUntilDone(entity);
     }
+    private static instance: Speech;
     static getInstance() {
         if(Speech.instance == undefined) {
             Speech.instance = new Speech();

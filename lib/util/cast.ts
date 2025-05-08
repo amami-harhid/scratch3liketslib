@@ -1,5 +1,19 @@
+/**
+ * Cast
+ */
 import { Color } from "./color";
 
+declare type RGBObject = {
+    r: number,
+    g: number,
+    b: number,
+    a?: number,
+}
+declare type HSVObject = {
+    h: number, 
+    s: number,
+    v: number,
+}
 /**
  * @fileoverview
  * Utilities for casting and comparing Scratch data-types.
@@ -16,10 +30,10 @@ export class Cast {
      * Scratch cast to number.
      * Treats NaN as 0.
      * In Scratch 2.0, this is captured by `interp.numArg.`
-     * @param {*} value Value to cast to number.
+     * @param {any} value Value to cast to number.
      * @return {number} The Scratch-casted number value.
      */
-    static toNumber (value) {
+    static toNumber (value: any): number {
         // If value is already a number we don't need to coerce it with
         // Number().
         if (typeof value === 'number') {
@@ -43,10 +57,10 @@ export class Cast {
      * Scratch cast to boolean.
      * In Scratch 2.0, this is captured by `interp.boolArg.`
      * Treats some string values differently from JavaScript.
-     * @param {*} value Value to cast to boolean.
+     * @param {any} value Value to cast to boolean.
      * @return {boolean} The Scratch-casted boolean value.
      */
-    static toBoolean (value) {
+    static toBoolean (value: any): boolean {
         // Already a boolean?
         if (typeof value === 'boolean') {
             return value;
@@ -67,10 +81,10 @@ export class Cast {
 
     /**
      * Scratch cast to string.
-     * @param {*} value Value to cast to string.
+     * @param {any} value Value to cast to string.
      * @return {string} The Scratch-casted string value.
      */
-    static toString (value) {
+    static toString (value: any): string {
         return String(value);
     }
     /**
@@ -79,7 +93,7 @@ export class Cast {
      * @param {RGBObject} rgb - {r: red [0,255], g: green [0,255], b: blue [0,255]}.
      * @return {HSVObject} hsv - {h: hue [0,360), s: saturation [0,1], v: value [0,1]}
      */
-    static rgbToHsv (rgb) {
+    static rgbToHsv (rgb: RGBObject): HSVObject {
         const r = rgb.r / 255;
         const g = rgb.g / 255;
         const b = rgb.b / 255;
@@ -101,10 +115,10 @@ export class Cast {
 
     /**
      * Cast any Scratch argument to an RGB color array to be used for the renderer.
-     * @param {*} value Value to convert to RGB color array.
+     * @param {any} value Value to convert to RGB color array.
      * @return {Array.<number>} [r,g,b], values between 0-255.
      */
-    static toRgbColorList (value) {
+    static toRgbColorList (value: any) : number[] {
         const color = Cast.toRgbColorObject(value);
         return [color.r, color.g, color.b];
     }
@@ -114,7 +128,7 @@ export class Cast {
      * @param {*} value Value to convert to RGB color object.
      * @return {RGBOject} [r,g,b], values between 0-255.
      */
-    static toRgbColorObject (value) {
+    static toRgbColorObject (value: any): RGBObject {
         let color;
         if (typeof value === 'string' && value.substring(0, 1) === '#') {
             color = Color.hexToRgb(value);
@@ -132,7 +146,7 @@ export class Cast {
      * @param {*} val value to check.
      * @return {boolean} True if the argument is all white spaces or null / empty.
      */
-    static isWhiteSpace (val) {
+    static isWhiteSpace (val: any): boolean {
         return val === null || (typeof val === 'string' && val.trim().length === 0);
     }
 
@@ -143,7 +157,7 @@ export class Cast {
      * @param {*} v2 Second value to compare.
      * @returns {number} Negative number if v1 < v2; 0 if equal; positive otherwise.
      */
-    static compare (v1, v2) {
+    static compare (v1: any, v2: any): number {
         let n1 = Number(v1);
         let n2 = Number(v2);
         if (n1 === 0 && Cast.isWhiteSpace(v1)) {
@@ -179,7 +193,7 @@ export class Cast {
      * @param {*} val Value to check.
      * @return {boolean} True if number looks like an integer.
      */
-    static isInt (val) {
+    static isInt (val: any): boolean {
         // Values that are already numbers.
         if (typeof val === 'number') {
             if (isNaN(val)) { // NaN is considered an integer.
@@ -198,11 +212,11 @@ export class Cast {
         return false;
     }
 
-    static get LIST_INVALID () {
+    static get LIST_INVALID (): string {
         return 'INVALID';
     }
 
-    static get LIST_ALL () {
+    static get LIST_ALL (): string {
         return 'ALL';
     }
 
@@ -216,7 +230,7 @@ export class Cast {
      * @param {boolean} acceptAll Whether it should accept "all" or not.
      * @return {(number|string)} 1-based index for list, LIST_ALL, or LIST_INVALID.
      */
-    static toListIndex (index, length, acceptAll) {
+    static toListIndex (index: any, length: number, acceptAll: boolean): number|string {
         if (typeof index !== 'number') {
             if (index === 'all') {
                 return acceptAll ? Cast.LIST_ALL : Cast.LIST_INVALID;

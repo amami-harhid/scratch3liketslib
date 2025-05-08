@@ -1,3 +1,9 @@
+/**
+ * Utils
+ */
+import { TPosition } from "lib/common/typeCommon";
+import { Entity } from "lib/entity/entity";
+
 export class Utils {
     /**
      * 距離を計算する
@@ -5,7 +11,7 @@ export class Utils {
      * @param {{x:number, y:number}} obj2 
      * @returns {number} distance
      */
-    static distance(obj1, obj2) {
+    static distance(obj1: TPosition, obj2: TPosition): number {
         if(obj1 && obj2 && (obj1.x != undefined && obj1.y != undefined && obj2.x != undefined && obj2.y != undefined) ){
             const x1 = obj1.x;
             const y1 = obj1.y;
@@ -33,7 +39,7 @@ export class Utils {
      * @param {Boolean} forceAsDecimal　True時には強制的に小数値として扱う。省略時はFalse。
      * @returns 
      */
-    static randomizeInRange(min, max, forceAsDecimal=false){
+    static randomizeInRange(min: number, max: number, forceAsDecimal: boolean=false): number{
         if( Utils.isNumber(min) && Utils.isNumber(max)) {
             const _max = max;
             const _min = min; 
@@ -54,13 +60,13 @@ export class Utils {
         return 0;
     }
 
-    static isNumber( val ) {
+    static isNumber( val: any ): boolean {
         if( val != undefined && (typeof val === 'number' || Utils.isInteger(val)) && isFinite(Number(val))) {
             return true;
         }
         return false;
     }
-    static isInteger( val ) {
+    static isInteger( val: any ): boolean {
         if(Number.isInteger(val)){
             return true;
         }
@@ -76,7 +82,7 @@ export class Utils {
      * @param {number} milliSecond 
      * @returns {Promise<void>}
      */
-    static wait (milliSecond = 0) {
+    static wait (milliSecond: number = 0): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, milliSecond));
     }
     /**
@@ -86,7 +92,7 @@ export class Utils {
      * @param {Entity} _bind 
      * @returns {Promise<void>}
      */
-    static waitUntil ( _condition, _pace, _bind ) :Promise<void> {
+    static waitUntil ( _condition: CallableFunction, _pace: number, _bind: Entity ) :Promise<void> {
         return new Promise( async (resolve) => {
             let condition;
             if( _bind ){
@@ -118,7 +124,7 @@ export class Utils {
      * @param {object} defaultValue 
      * @returns 
      */
-    static mapDeepCopy(src, dist, defaultValue) {
+    static mapDeepCopy(src: Map<string,object>, dist: Map<string,object>, defaultValue: object) {
         let _dist;
         if( dist ) {
             _dist = dist;
@@ -142,9 +148,9 @@ export class Utils {
      * 
      * @returns {string}
      */
-    static generateUUID () {
-        let d;
-        let r;
+    static generateUUID (): string {
+        let d: number;
+        let r: number;
     
         d = new Date().getTime()
     

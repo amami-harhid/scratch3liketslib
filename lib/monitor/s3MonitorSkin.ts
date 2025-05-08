@@ -78,7 +78,7 @@ export class S3MonitorSkin extends EventEmitter {
 
     /** adding */
     private _dropping: boolean;
-    private _text: string;
+    private _text: string|number;
     private titleLineWidth: number;
     private valueLineWidth: number;
     private actualValueLineWidth: number;
@@ -333,15 +333,15 @@ export class S3MonitorSkin extends EventEmitter {
     }
     /**
      * Set parameters for this text monitor.
-     * @param {string} value 
+     * @param {string|number} value 
      */
-    set value (value) {
+    set value (value: string|number) {
         this._text = value;
         this._textDirty = true;
         this._textureDirty = true;
         this.emit(S3MonitorSkin.Events.WasAltered);
     }
-    get value() {
+    get value() :string|number{
         return this._text;
     }
     _restyleCanvas () {
@@ -490,7 +490,7 @@ export class S3MonitorSkin extends EventEmitter {
             const valueStartPosition = this.titleLineWidth + MonitorStyle.PADDING + MonitorStyle.CORNER_RADIUS;
             let _valueStartPosition = valueStartPosition
                         + (this.valueLineWidth - this.actualValueLineWidth)/2;
-            ctx.fillText(this._text, _valueStartPosition, firtLineTop);
+            ctx.fillText(`${this._text}`, _valueStartPosition, firtLineTop);
 
         }
         this._renderedScale = scale;

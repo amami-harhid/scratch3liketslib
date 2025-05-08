@@ -1,3 +1,6 @@
+/**
+ * Color
+ */
 export class Color {
     /**
      * @typedef {object} RGBObject - An object representing a color in RGB format.

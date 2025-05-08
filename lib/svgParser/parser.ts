@@ -1,4 +1,8 @@
-//@ts-nocheck
+/**
+ * SVGParser
+ */
+import { TPosition, TScale } from "lib/common/typeCommon";
+
 export class SVGParser {
     
     static instance = null;
@@ -8,6 +12,9 @@ export class SVGParser {
         }
         return new SVGParser();
     }
+    private domParser: DOMParser;
+    private serializer: XMLSerializer;
+    private svgDoc: HTMLElement|null;
     /**
      * @constructor
      */
@@ -22,16 +29,17 @@ export class SVGParser {
      * @param {string} svgText 
      * @return {Element} 
      */
-    parseFromString(svgText) {
+    parseFromString(svgText: string) : HTMLElement {
         const parsedSVGDoc = this.domParser.parseFromString(svgText, 'image/svg+xml');
-        this.svgDoc = parsedSVGDoc.childNodes[0];
-        return this.svgDoc;        
+        const node:ChildNode = parsedSVGDoc.childNodes[0];
+        this.svgDoc = node as HTMLElement;
+        return this.svgDoc;
     }
     /**
      * 
      * @return {{w:number,h:number}}
      */
-    getSize() {
+    getSize() : TScale {
         if(this.svgDoc){
             const element = this.svgDoc;
             const w = element.getAttribute('width');
@@ -44,14 +52,14 @@ export class SVGParser {
     }
     /**
      * 
-     * @param {Element} svgDoc 
+     * @param {HTMLElement} svgDoc 
      * @param {number} w 
      * @param {number} h 
      * @param {object} translate 
      * @return {string} 変更後のsvgDoc文字列
      */
-    sizeChange(svgDoc, w=480, h=360, 
-                    translate={x:0, y:0}) {
+    sizeChange(svgDoc: HTMLElement, w:number=480, h:number=360, 
+                    translate:TPosition={x:0, y:0}): string {
         // svgタグ
         svgDoc.setAttribute('width', `${w}px`);
         svgDoc.setAttribute('height', `${h}px`);

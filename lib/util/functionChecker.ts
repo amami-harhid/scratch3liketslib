@@ -1,16 +1,25 @@
 /**
+ * FunctionChecker
  * Functionの種類を判定する
  * 新しめのJavascript構文を扱える@babel/parserを使用する
  */
 const { parse } = require("@babel/parser");
-
+declare type TFunctionChecker = {
+    isArrow: boolean,
+    isAsync: boolean,
+    isGenerator: boolean,
+};
+declare type TypeOfGenerator = {
+    isAsyncGenerator: boolean,
+    isAwaiter: boolean,
+}
 export class FunctionChecker {
     /**
      * 関数定義を渡しアロー関数、Async、Generatorの種類を返す。
      * @param {CallableFunction} func 
-     * @returns {FUNCTION_DECLARE} 関数の種類
+     * @returns {TFunctionChecker} 関数の種類
      */
-    static getFunctionDeclares(func) {
+    static getFunctionDeclares(func: CallableFunction): TFunctionChecker {
 
         const ast = parse(`const x = ${func.toString()}`);
         // @ts-ignore (ts(2339) declarations undefined error)
@@ -29,7 +38,7 @@ export class FunctionChecker {
      * @param {CallableFunction} func 
      * @returns {TYPE_OF_GENERATOR}
      */
-    static getTypeOfGenerator(func) {
+    static getTypeOfGenerator(func: CallableFunction): TypeOfGenerator {
         let isAsyncGenerator = false;
         let isAwaiter = false;
         const ast = parse(`const x = ${func.toString()}`);

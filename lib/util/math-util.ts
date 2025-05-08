@@ -4,7 +4,7 @@ export class MathUtil {
      * @param {!number} deg Value in degrees.
      * @return {!number} Equivalent value in radians.
      */
-    static degToRad (deg) {
+    static degToRad (deg: number) :number {
         return deg * Math.PI / 180;
     }
 
@@ -13,7 +13,7 @@ export class MathUtil {
      * @param {!number} rad Value in radians.
      * @return {!number} Equivalent value in degrees.
      */
-    static radToDeg (rad) {
+    static radToDeg (rad: number): number {
         return rad * 180 / Math.PI;
     }
 
@@ -25,7 +25,7 @@ export class MathUtil {
      * @param {!number} max Maximum limit.
      * @return {!number} Value of n clamped to min and max.
      */
-    static clamp (n, min, max) {
+    static clamp (n: number, min: number, max: number): number {
         return Math.min(Math.max(n, min), max);
     }
 
@@ -39,7 +39,7 @@ export class MathUtil {
      * @param {!number} max Maximum limit.
      * @return {!number} Value of n wrapped between min and max.
      */
-    static wrapClamp (n, min, max) {
+    static wrapClamp (n: number, min: number, max: number): number {
         const range = (max - min) + 1;
         return n - (Math.floor((n - min) / range) * range);
     }
@@ -50,7 +50,7 @@ export class MathUtil {
      * @param {!number} angle in degrees
      * @return {!number} Correct tan value
      */
-    static tan (angle) {
+    static tan (angle: number): number {
         angle = angle % 360;
         switch (angle) {
         case -270:
@@ -73,7 +73,7 @@ export class MathUtil {
      * @param {Array<number>} elts The elements to sort and reduce
      * @return {Array<number>} The array of reduced orderings
      */
-    static reducedSortOrdering (elts) {
+    static reducedSortOrdering (elts: number[]): number[] {
         const sorted = elts.slice(0).sort((a, b) => a - b);
         return elts.map(e => sorted.indexOf(e));
     }
@@ -90,7 +90,7 @@ export class MathUtil {
      * @param {number} excluded - The number to exclude (MUST be in the range)
      * @return {number} A random integer in the range [lower, upper] that is not "excluded"
      */
-    static inclusiveRandIntWithout (lower, upper, excluded) {
+    static inclusiveRandIntWithout (lower: number, upper: number, excluded: number): number {
         // Note that subtraction is the number of items in the
         // inclusive range [lower, upper] minus 1 already
         // (e.g. in the set {3, 4, 5}, 5 - 3 = 2).
@@ -113,7 +113,7 @@ export class MathUtil {
      * @param {number} oMax output range maximum
      * @return {number} scaled number
      */
-    static scale (i, iMin, iMax, oMin, oMax) {
+    static scale (i: number, iMin: number, iMax: number, oMin: number, oMax: number): number {
         const p = (i - iMin) / (iMax - iMin);
         return (p * (oMax - oMin)) + oMin;
     }

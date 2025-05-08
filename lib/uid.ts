@@ -26,4 +26,3 @@ export const uid = function () {
     }
     return id.join('');
 };
-//module.exports = uid;

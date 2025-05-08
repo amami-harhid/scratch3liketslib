@@ -1,5 +1,4 @@
 //@ts-nocheck
-//const Threads = require('../threads');
 import { Threads } from '../threads';
 /**
  * エンティティのプロキシ拡張
@@ -102,4 +101,3 @@ export class EntityProxyExt {
         return proxy;
     }
 };
-//module.exports = EntityProxyExt;

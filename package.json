@@ -1,6 +1,6 @@
 {
   "name": "scratch3liketslib",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "typescript version scratch3-like library",
   "main": "./lib",
   "module": "es2022",
@@ -38,8 +38,8 @@
     "buffer": "^6.0.3",
     "core-js": "^3.42.0",
     "regenerator-runtime": "^0.14.1",
-    "scratch-audio": "^2.0.0",
-    "scratch-render": "^2.0.0",
+    "scratch-audio": "^2.0.139",
+    "scratch-render": "^2.0.342",
     "twgl.js": "^4.4.0"
   }
 }

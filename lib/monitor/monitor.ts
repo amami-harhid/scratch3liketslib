@@ -200,4 +200,3 @@ Monitor.Events = {
     DROP_START: 'DropStart',
     DROP_COMPLETE: 'DropComplete'    
 };
-//module.exports = Monitor;

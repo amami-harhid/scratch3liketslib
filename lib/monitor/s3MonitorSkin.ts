@@ -4,7 +4,6 @@ import { S3CanvasMeasurementProvider } from "./s3CanvasMeasurementProvider";
 import { MonitorRenderingConstants } from "./s3RenderConstants";
 import { S3Silhouette } from "./s3Silhouette";
 const twgl = require('twgl.js');
-//import twgl from 'twgl.js';
 
 const MonitorStyle = {
     MAX_LINE_WIDTH: 480,  // stage width

@@ -193,5 +193,4 @@ export class Keyboard {
         return this._keysPressed.indexOf(scratchKey) > -1;
     }
 
-}
-//module.exports = Keyboard;
+};

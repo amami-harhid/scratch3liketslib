@@ -276,4 +276,3 @@ export class S3Element {
     }
 
 };
-//module.exports = S3Element;

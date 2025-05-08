@@ -161,5 +161,4 @@ export class Utils {
         return uuid;  
     }
 
-}
-//module.exports = Utils;
+};

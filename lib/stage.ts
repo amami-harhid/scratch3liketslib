@@ -388,4 +388,3 @@ export class Stage extends Entity {
         }
     }
 };
-//module.exports = Stage;

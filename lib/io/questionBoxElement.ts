@@ -1,4 +1,5 @@
-const EventEmitter = require('events');
+//@ts-nocheck
+import { EventEmitter } from 'events';
 import { PlayGround } from '../playGround';
 import { Utils } from '../util/utils';
 
@@ -204,4 +205,3 @@ export class QuestionBoxElement extends EventEmitter {
         }
     }
 };
-//module.exports = QuestionBoxElement;

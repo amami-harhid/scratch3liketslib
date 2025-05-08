@@ -1,20 +1,15 @@
 //@ts-nocheck
-//const { NowLoading } = await import('./nowLoading');
-//const S3Element = require('./element');
 import {S3Element} from './element';
 import { Env } from './env';
 import { FontLoader } from './importer/fontLoader';
 import { ImageLoader } from './importer/imageLoader';
 import { Libs } from './libs';
 import { Render } from './render';
-//import { Render } from './render';
 import { Runtime } from './engine/runtime';
 import { SoundLoader } from './importer/soundLoader';
 import { Sprite } from './sprite';
 import { Stage } from './stage';
-//const Threads = require('./threads');
 import { Threads } from './threads';
-//const Utils = require('./utils');
 import { Utils } from './util/utils';
 
 export class PlayGround {
@@ -391,8 +386,4 @@ export class PlayGround {
             "stopAll": this.$stopAll.bind(this),
         }
     }
-}
-//const playGround = PlayGround.getInstance();
-
-//module.exports = PlayGround;
-//export default PlayGround.getInstance()
+};

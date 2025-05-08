@@ -1262,4 +1262,3 @@ export class Sprite extends Entity {
         }
     }
 };
-//module.exports = Sprite;

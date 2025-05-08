@@ -73,5 +73,4 @@ export class Monitors {
             _monitor.draw();
         }
     }
-}
-//module.exports = Monitors;
+};

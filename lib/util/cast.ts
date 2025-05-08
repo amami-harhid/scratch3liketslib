@@ -240,4 +240,3 @@ export class Cast {
         return index;
     }
 };
-//module.exports = Cast;

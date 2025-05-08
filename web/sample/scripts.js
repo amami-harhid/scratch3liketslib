@@ -2,9 +2,9 @@
  * sample28
  * 質問を出す
  */
-//const PlayGround = require('../../build/index.js');
 import {Pg, Lib} from '../../build/main.js';
-//Pg.title = "【Sample30】変数モニターを表示する"
+
+Pg.title = "【Sample30】変数モニターを表示する"
 
 const Jurassic01 = "Jurassic01";
 const Chill = "Chill";

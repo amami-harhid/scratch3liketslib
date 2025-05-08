@@ -1283,4 +1283,3 @@ export class Entity extends EventEmitter {
         }
     }
 };
-//module.exports = Entity;

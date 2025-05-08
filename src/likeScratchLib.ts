@@ -1,6 +1,5 @@
 import 'regenerator-runtime';
 import 'core-js';
-//const { Buffer } = require('buffer');
 const { Buffer } = await import(/* webpackMode: "eager" */ 'buffer');
 // 【Buffer】
 // BufferはNodeAPIでありNODEの外では利用できない仕様である

@@ -75,14 +75,14 @@ export const GENDER = class {
     }
 }
 export class Speech {
-    private voice: string;
-    private language: string;
-    private gender: string;
+    //private voice: string;
+    //private language: string;
+    public gender: string;
     private cache;
-    private locale: string|null;
+    public locale: string|null;
     constructor() {
-        this.voice = ALTO_ID;
-        this.language =  JAPANESE_ID;
+        //this.voice = ALTO_ID;
+        //this.language =  JAPANESE_ID;
         this.gender = GENDER.FEMALE;
         this.cache = new Map();
         this.locale = null;

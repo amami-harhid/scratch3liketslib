@@ -1,9 +1,10 @@
-import { StageLayering } from '../stageLayering';
+import { StageLayering } from '../entity/stageLayering';
 import { S3MonitorSkin } from '../monitor/s3MonitorSkin';
-import { IDrawable } from './IDrawable';
-import { TBounds } from '../common/typeCommon';
+import type { IDrawable } from './IDrawable';
+import type { TBounds, TPosition, TPositionArray } from '../common/typeCommon';
+import type { RGBColorArray } from '../util/cast';
 
-declare type ScratchRenderProperties = {
+export declare type ScratchRenderProperties = {
     skindId: number,
     position: number[],
     scale: number[],
@@ -76,6 +77,45 @@ export declare interface IRenderWebGL {
      */
     destroySkin(skinId: number): void;
     /**
+     * Update the position object's x & y members to keep the drawable fenced in view.
+     * @param drawableID {number} - the id of the Drawable to update.
+     * @param position {TPositionArray} - position to be fenced - An array of type [x, y]
+     * @returns {TPositionArray} - The fenced position as an array [x, y]
+     */
+    getFencedPositionOfDrawable(drawableID:number, position:TPositionArray): TPositionArray;
+    /**
+     * 
+     * @param drawableID {number} - The ID of the Drawable to check.
+     * @param color3b {number[]} - Test if the Drawable is touching this color.
+     * @param mask3b {number[]} - Optionally mask the check to this part of Drawable.
+     */
+    isTouchingColor(drawableID: number, color3b: RGBColorArray, mask3b?: RGBColorArray): boolean;
+    /**
+     * Check if a particular Drawable is touching any in a set of Drawables.
+     * @param drawableID {number} - The ID of the Drawable to check.
+     * @param candidateIDs {number[]} - The Drawable IDs to check, otherwise all visible drawables in the renderer
+     */
+    isTouchingDrawables(drawableID: number, candidateIDs?: number[]): boolean;
+    /**
+     * Detect which sprite, if any, is at the given location.
+     * This function will pick all drawables that are visible,
+     * unless specific candidate drawable IDs are provided.
+     * Will not select hidden / ghosted sprites.
+     * @param centerX {number} - The client x coordinate of the picking location.
+     * @param centerY {number} - The client y coordinate of the picking location.
+     * @param touchWidth {number} - The client width of the touch event
+     * @param touchHeight {number} - The client height of the touch event
+     * @param candidateIDs {number[]} - The Drawable IDs to pick from, otherwise all visible drawables.
+     * @returns {number} - The ID of the topmost Drawable under the picking location.
+     */
+    pick(centerX:number, centerY:number, touchWidth?:number, touchHeight?:number, candidateIDs?:number[]): number|boolean;
+    /**
+     * ステージをリサイズする
+     * @param w {number} - 横
+     * @param h {number} - 縦
+     */
+    resize(w: number, h: number): void;
+    /**
      * モニター用スキンを作成する
      * @param {number} drawableID - drawable id.
      * @param {string} label - layer name.
@@ -95,11 +135,16 @@ export declare interface IRenderWebGL {
      */
     setDrawableOrder(drawableID: number, order: number, group: StageLayering, optIsRelative: boolean, optMin?: number): void;
     /**
+     * Set the layer group ordering for the renderer.
+     * @param groupOrdering {StageLayering[]} - The ordered array of layer group
+     */
+    setLayerGroupOrdering(groupOrdering: StageLayering[]): void;
+    /**
      * Update a drawable's position.
      * @param drawableID {number} - drawable id.
      * @param position {number[]} - the new position.
      */
-    updateDrawablePosition(drawableID: number, position: number[]): void;
+    updateDrawablePosition(drawableID: number, position: TPositionArray): void;
     /**
      * update position, direction, scale, or effect properties
      * @param drawableID {number}
@@ -118,6 +163,12 @@ export declare interface IRenderWebGL {
      * @param skinId {number}
      */
     updateDrawableSkinId(drawableID: number, skinId: number): void;
+    /**
+     * Update a drawable's visibility.
+     * @param drawableID {number}
+     * @param visible {boolean}
+     */
+    updateDrawableVisible(drawableID: number, visible: boolean): void;
     /**
      * 
      * @param skinId {number} - skin id.

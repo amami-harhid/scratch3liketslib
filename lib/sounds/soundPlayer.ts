@@ -1,7 +1,10 @@
 /**
  * SoundPlayer
  */
-import type { IAudioEngine, IScratchSoundPlayer, TSoundPlayerOption, TEffectChain} from "./IAudioEngine";
+import type { 
+    IScratchSoundPlayer, 
+    TSoundPlayerOption, 
+    TEffectChain } from "./IAudioEngine";
 export class SoundPlayer {
     private _name : string;
     private _soundPlayer: IScratchSoundPlayer;

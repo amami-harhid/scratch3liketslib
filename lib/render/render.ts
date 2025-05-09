@@ -1,4 +1,6 @@
-//@ts-nocheck
+/**
+ * Render
+ */
 const ScratchRender = require('scratch-render');
 import { Canvas } from '../elements/canvas';
 import { S3Element } from '../elements/element';
@@ -7,36 +9,62 @@ import { StageLayering } from '../entity/stageLayering';
 import { IRenderWebGL } from './IRenderWebGL';
 
 export class Render {
-    static get WHRate() {
+    /**
+     * ステージ縦横比(縦÷高さの率)
+     */
+    static get WHRate(): number {
         return 0.75;
     }
-    static get W() {
+    /**
+     * ステージの横ピクセル数(CSSピクセル)
+     */
+    static get W(): number {
         //const Scratch3StageWidth = 240;
         const WHRate = Render.WHRate; // ( 3/4 )
+        // 上部にコントロールバースペースを確保するため少しだけ縮小する
+        // 縮小率は試行錯誤して決めた。
         const InnerWidthRate = 0.95;// 0.95; //0.8;
         const InnerHeightRate = 0.95;
-        let w = innerWidth / devicePixelRatio * InnerWidthRate;
+        // devicePixelRatio:CSSピクセルが何個の物理ピクセルで表示されるのかという値
+        const _devicePixelRatio = window.devicePixelRatio;
+        // ブラウザビューポートの幅
+        const _innerWidth = window.innerWidth;
+        // ブラウザビューポートの高さ
+        const _innerHeight = window.innerHeight;
+        let w = (_innerWidth / _devicePixelRatio)* InnerWidthRate;
         let h = w * WHRate;
-        const hLimit = innerHeight / devicePixelRatio * InnerHeightRate;
+        const hLimit = (_innerHeight / _devicePixelRatio) * InnerHeightRate;
         if( h > hLimit ) {
             h = hLimit;
             w = h / WHRate;
         }
         return w;
     }
+    /**
+     * ステージの縦ピクセル数(CSSピクセル)
+     */
     static get H() {
         return Render.W * Render.WHRate;
     }
-    static get p() {
+    private static playGround: PlayGround|undefined;
+    /** PlayGroundのGetter @returns {PlayGround} */
+    static get p(): PlayGround {
+        if(Render.playGround==undefined) throw 'PlayGround is undefined.';
         return Render.playGround;
     }
+    /** PlayGroundのSetter @param {PlayGround} playGround */
     static set p(playGround){
         Render.playGround = playGround;
     }
+    private layerGroups: StageLayering[];
     public stageWidth: number;
     public stageHeight: number;
-    private _renderer: IRenderWebGL;
-    static private playGround: PlayGround|undefined;
+    private _renderer: IRenderWebGL|null;
+    private canvas: HTMLCanvasElement|null;
+    /**
+     * @constructor
+     * @param layerGroups {StageLayering[]}
+     */
     constructor(layerGroups = StageLayering.LAYER_GROUPS) {
         this.layerGroups = layerGroups;
         this.stageWidth = 0;
@@ -52,7 +80,12 @@ export class Render {
         };
         window.addEventListener('resize', resizeWindow);
     }
-    stageResize(w = Render.W , h = Render.H) {
+    /**
+     * ステージをリサイズする
+     * @param w {number} - 横
+     * @param h {number} - 縦
+     */
+    stageResize(w: number = Render.W , h: number = Render.H): void {
         if(this._renderer){
             this._renderer.resize( w, h ); // stage(canvas)のサイズ property(width,height)の値をリサイズ
             const _nativeSize = this._renderer.getNativeSize ();
@@ -62,10 +95,20 @@ export class Render {
             Render.monitorCanvasResize( w, h);    
         }
     }
-    static monitorCanvasResize(w = Render.W , h = Render.H) {
+    /**
+     * MonitorCanvasをリサイズする
+     * @param w {number} 横幅
+     * @param h {number} 縦幅
+     */
+    static monitorCanvasResize(w: number = Render.W , h: number = Render.H): void {
         Canvas.resizeMonitorCanvas(w, h);
 
     }
+    /**
+     * Rendererを作成する
+     * @param w 
+     * @param h 
+     */
     createRenderer (w = Render.W , h = Render.H ) {
         this.canvas = S3Element.canvas;
         this._renderer = new ScratchRender(this.canvas);
@@ -75,7 +118,7 @@ export class Render {
         }    
     }
     /**
-     * 
+     * Drawableを作成する
      * @param layer {StageLayering} - layer name
      * @returns {number} - drawableID.
      */
@@ -86,7 +129,10 @@ export class Render {
         }
         throw `'createDrawable' failed, renderer is null `;
     }
-    get renderer() {
+    /**
+     * Rendererを取得する
+     */
+    get renderer(): IRenderWebGL {
         if(this._renderer == undefined) throw 'Not found renderer error';
         return this._renderer;
     }

@@ -1,4 +1,6 @@
-//@ts-nocheck
+/**
+ * Entity
+ */
 import { Canvas } from '../elements/canvas';
 import { Controls, Loop } from '../controls/controls';
 import { S3Element } from '../elements/element';
@@ -9,17 +11,23 @@ import { EventEmitter } from "events";
 import { FunctionChecker } from '../util/functionChecker';
 import { Libs } from '../controls/libs';
 import { MathUtil } from '../util/math-util';
+import { Render } from '../render/render';
 import { Sounds } from '../sounds/sounds';
 import { Speech } from '../speech/text2Speech';
 import { Threads } from '../controls/threads';
 import { Utils } from '../util/utils';
-import { ImageEffective, SoundOption, RotationStyle } from './entityConstant';
+import { ImageEffective, SoundOption } from './entityConstant';
 import { PlayGround } from '../playGround';
-
+import { StageLayering } from './stageLayering';
+import type { TThreadObj } from '../controls/TThreadObj';
+import type { TPosition, TScale } from '../common/typeCommon';
+import type { TEntityEffects, TEntityOptions } from './entityOptions';
+import type { TBroadcastElement, TBroadcastElementFunc } from './TBroadcastElement';
+declare type CLICK_EVENT_FUNCTION = (e: MouseEvent, _counter: number) => Promise<void>;
 export class Entity extends EventEmitter {
     static clickFirstRegist = true;
-    static eventFuncArray = [];
-    static broadcastReceivedFuncArr = [];
+    static eventFuncArray: CLICK_EVENT_FUNCTION[] = [];
+    static broadcastReceivedFuncArr:TBroadcastElement[] = [];
     static get EmitIdMovePromise () {
         return '_MovePromise_';
     }
@@ -29,7 +37,30 @@ export class Entity extends EventEmitter {
     protected render: Render;
     public playGround: PlayGround;
     protected drawableID: number;
-    constructor (name, layer, options = {} ){
+    private _libs: Libs;
+    private threads: Threads;
+    private pace?: number;
+    private name: string;
+    private layer: StageLayering;
+    public id: string;
+    private canvas: HTMLCanvasElement;
+    private flag: HTMLElement|null;
+    private $_position: TPosition;
+    private $_scale: TScale;
+    private $_direction: number;
+    protected _visible: boolean;
+    private sounds: Sounds|null;
+    private importAllDone: boolean[];
+    private importIdx: number;
+    protected $_prev_position: TPosition;
+    protected $_prev_scale: TScale;
+    protected $_prev_direction: number;
+    private _effect: TEntityEffects;
+    public life: number;
+    private modules?: Map<string, Promise<void>[]>;
+    protected _isAlive: boolean;
+    private _timer: number;
+    constructor (name: string, layer: StageLayering, options:TEntityOptions = {} ){
         super();
         this._libs = Libs.getInstance();
         this.threads = Threads.getInstance();        
@@ -433,24 +464,49 @@ export class Entity extends EventEmitter {
 //        return t;
 //    }
 
-    async $waitSeconds (seconds) {
+    /**
+     * Scratch3 Wait Block 風メソッド
+     * @deprecated 【利用非推奨】このメソッドは利用局面がありません。
+     * @param seconds: {number} - 待つ秒数 
+     */
+    async $waitSeconds (seconds: number): Promise<void> {
         await Controls.waitSeconds(seconds);
     }
-    async $waitUntil(condition) {
+    /**
+     * Scratch3 Until Block 風メソッド
+     * @deprecated 【利用非推奨】このメソッドは利用局面がありません。
+     * @param condition 
+     */
+    async $waitUntil(condition: CallableFunction): Promise<void> {
         await Controls.waitUntil(condition);
     }
-    async $waitWhile(condition) {
+    /**
+     * Scratch3 Ever Block 風メソッド
+     * @deprecated 【利用非推奨】このメソッドは利用局面がありません。
+     * @param condition {CallableFunction}
+     */
+    async $waitWhile(condition: CallableFunction): Promise<void> {
         await Controls.waitWhile(condition);
     }
  
+    /**
+     * マウスタッチしていないことを判定する
+     * @returns {boolean} - 非マウスタッチ
+     */
     $isNotMouseTouching() {
         return !(this.$isMouseTouching());
     }
+    /**
+     * 自分自身がマウスタッチしているかを判定する
+     * @returns {boolean} - マウスタッチ中
+     */
     $isMouseTouching() {
         if(this.playGround.render){
             const mouseX = this.playGround.stage.mouse.x +1; // +1 は暫定、理由不明
             const mouseY = this.playGround.stage.mouse.y +1;
             if(this.playGround.render.renderer){
+                // 自分自身だけを対象にしてマウスタッチしているDrawableのIDを取得する
+                // マウスタッチしていれば自分自身のDrawableIDが返るはず。
                 const _touchDrawableId = this.playGround.render.renderer.pick(mouseX,mouseY, 2, 2, [this.drawableID]); 
                 if(this.drawableID == _touchDrawableId){
                     return true;
@@ -461,8 +517,8 @@ export class Entity extends EventEmitter {
 
     }
 
-    $isTouchingTargetToTarget(src, targets) {
-        const targetIds = [];
+    $isTouchingTargetToTarget(src: Entity, targets: Entity[] | Entity) {
+        const targetIds: number[] = [];
         if(Array.isArray(targets)){
             for(const _t of targets) {
                 if(_t.visible){
@@ -471,8 +527,8 @@ export class Entity extends EventEmitter {
                 }
             }    
         }else{
-            const target = targets;
-            const _drawableId = target.drawableID;
+            const _targets = targets as Entity;
+            const _drawableId = _targets.drawableID;
             targetIds.push(_drawableId);
         }
         if( targetIds.length > 0 ) {
@@ -498,9 +554,9 @@ export class Entity extends EventEmitter {
         }
         return false;
     }
-    $getTouchingTarget(targets) {
+    $getTouchingTarget(targets: Entity[]): Entity[] {
         const src = this;
-        const touchingTragets = []
+        const touchingTragets: Entity[] = []
         if(Array.isArray(targets)){
             for(const t of targets){
                 const touching = this.$isTouchingTargetToTarget(src,t);
@@ -518,8 +574,12 @@ export class Entity extends EventEmitter {
 
         return touchingTragets;
     }
-
-    isTouchingTarget(targets) {
+    /**
+     * 指定したEntity配列の中で 自身に触れているものがあるかをチェックする
+     * @param targets {Entity[]} - チェック対象の配列
+     * @returns {boolean} - 触れていればTrue.
+     */
+    isTouchingTarget(targets: Entity[]): boolean {
         const src = this;
         const touching = this.$isTouchingTargetToTarget(src,targets);
         return touching;
@@ -529,13 +589,13 @@ export class Entity extends EventEmitter {
      * @param {string} targetRgb #始まりのカラー文字列
      * @returns {Promise.<boolean>} 色にタッチしたとき true
      */
-    async $isTouchingColor(targetRgb) {
+    async $isTouchingColor(targetRgb: string) {
         if(this.render && this.render.renderer && targetRgb &&
             typeof targetRgb === 'string' && targetRgb.substring(0, 1) === '#'
         ){
             const _renderer = this.render.renderer;
-            const _targetRgb = this._libs.Cast.toRgbColorObject(targetRgb);
-            return await _renderer.isTouchingColor(this.drawableID, _targetRgb);
+            const _targetRgb = this._libs.Cast.toRgbColorList(targetRgb);
+            return _renderer.isTouchingColor(this.drawableID, _targetRgb);
         }
         return false;
     }
@@ -658,7 +718,7 @@ export class Entity extends EventEmitter {
             const eventId = `message_${messageId}`;
             // func をためる。
             const funcArr = Entity.broadcastReceivedFuncArr;
-            let _foundElement = null;
+            let _foundElement: TBroadcastElement|null = null;
             for(const elem of funcArr){
                 if(elem.eventId == eventId){
                     _foundElement = elem;
@@ -676,7 +736,7 @@ export class Entity extends EventEmitter {
                  * modules: 実行した処理のpromiseを入れる
                  * toTarget: ここに指定していない先は無視する
                  */
-                runtime.on(eventId, function( modules, toTarget, ...args){
+                runtime.on(eventId, function( modules:Map<string, Promise<void>[]>, toTarget:Entity[], ...args:any[]){
                     if(_foundElement){
                         const funcArr = _foundElement.funcArr;
                         for( const funcElement of funcArr){
@@ -685,7 +745,7 @@ export class Entity extends EventEmitter {
                             if(toTarget.length == 0){
                                 targetOn = true;
                             }else{
-                                const targetIdArr = [];
+                                const targetIdArr: string[] = [];
                                 for(const t of toTarget){
                                     targetIdArr.push(t.id);
                                 }                    
@@ -716,7 +776,7 @@ export class Entity extends EventEmitter {
         proxy.threadId = threadId;
         const obj = proxy.startThreadMessageRecieved(func, proxy, false, ...args);                    
         obj.originalF = func;
-        const promise = new Promise(async resolve=>{
+        const promise = new Promise<void>(async resolve=>{
             for(;;){
                 if(obj.done){
                     break;
@@ -811,7 +871,7 @@ export class Entity extends EventEmitter {
         const p = this.playGround;
         const runtime = p.runtime;
         if(key && func && runtime) {
-            runtime.on("KEY_PRESSED", function(pressedKey){
+            runtime.on("KEY_PRESSED", function(pressedKey:string){
                 if( key === pressedKey) {
                     if(p.runningGame === false){
                         return; // 緑の旗が押されていないときは何もしない
@@ -819,7 +879,7 @@ export class Entity extends EventEmitter {
                     // whenClicked と同じ処理
                     const addId = `_keyPressed_${key}`;
                     const entityId = me.id + addId;
-                    this.threads.removeObjById(entityId); // 前回のキープレス分を止める
+                    me.threads.removeObjById(entityId); // 前回のキープレス分を止める
                     const threadId = me._generateUUID();
                     const proxy = me.getProxyForHat();
                     proxy.threadId = threadId;
@@ -841,7 +901,7 @@ export class Entity extends EventEmitter {
         const p = this.playGround;
         const addId = '_clicked';
         const me = this;
-        const _clickEventF = async (e)=>{
+        const _clickEventF = async (e: MouseEvent)=>{
             e.stopPropagation();
             // 緑の旗押されていないときは何もしない。
             if(p.runningGame === false){
@@ -850,10 +910,11 @@ export class Entity extends EventEmitter {
             let _counter = 0;
             for(const eventf of Entity.eventFuncArray){
                 _counter += 1;
-                eventf(e, _counter);
+                eventf(e, _counter); // 意図的にawaitしていない
             }
         }
-        const eventf = async (e, _counter)=>{
+        const eventf: CLICK_EVENT_FUNCTION
+                 = async (e:MouseEvent, _counter:number):Promise<void>=>{
             const CLICK_COUNTER = _counter; //Entity._clickCounter;
             const entityId = me.id + addId;
             e.stopPropagation();
@@ -954,7 +1015,7 @@ export class Entity extends EventEmitter {
         // @ts-ignore (proxy properties undefined error)
         const threadId = _entity.threadId;
 
-        const obj = this.threads.createObj();
+        const obj:TThreadObj = this.threads.createObj();
         obj['entityId'] = _entity.id + addId;
         obj.threadId = threadId; //this.id;
         obj['entity'] = _entity;
@@ -1074,7 +1135,10 @@ export class Entity extends EventEmitter {
         }
     
     }
-    pointTowardsMouseCursol( ) {
+    /**
+     * カーソルの位置へ向く
+     */
+    pointTowardsMouseCursol(): void {
         // CANVAS 外に出てら ポインターを向かない。
         const mousePosition = this._libs.mousePosition;
         const targetX = mousePosition.x;
@@ -1087,9 +1151,14 @@ export class Entity extends EventEmitter {
         }
         this.$_direction = direction;
     }
-    $_isDrawableActive(drawableID) {
+    /**
+     * Drawable が存在してSkinがあるかを判定する
+     * @param drawableID {number}
+     * @returns {boolean}
+     */
+    $_isDrawableActive(drawableID: number): boolean {
         const drawable = this.render.renderer._allDrawables[drawableID];
-        if( drawable && drawable._skin ){
+        if( drawable && drawable.skin ){
             return true;
         }
         return false;

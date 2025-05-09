@@ -14,7 +14,7 @@ export class Monitor extends Entity {
     }
     private _monitorId: string;
     private _label: string;
-    private _visible: boolean;
+    //private _visible: boolean;
     private _skin: S3MonitorSkin|undefined;
     private _skinId: number;
     private renderer: IRenderWebGL;

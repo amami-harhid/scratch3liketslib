@@ -7,6 +7,12 @@ export declare type TPosition = {
     x: number,
     y: number,
 };
+declare interface TwoNumberArray {
+    0: number,
+    1: number,
+    length: 2,
+}
+export declare type TPositionArray = TwoNumberArray;
 /** スケール */
 export declare type TScaleCanEmpty = {
     w?: number,

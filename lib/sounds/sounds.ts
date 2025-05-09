@@ -10,7 +10,7 @@ import { SoundPlayer } from './soundPlayer';
 export class Sounds {
     private audioEngine: IAudioEngine;
     private entity: Entity;
-    private soundPlayer: SoundPlayer|undefined;
+    public soundPlayer: SoundPlayer|undefined;
     private soundPlayers: Map<string, SoundPlayer>;
     private soundIdx: number;
     constructor(entity: Entity) {
@@ -156,7 +156,7 @@ export class Sounds {
      * @param {Entity} self 
      * @returns {Promise<void>}
      */
-    async startSoundUntilDone(self: Entity): Promise<void> {
+    async startSoundUntilDone(self?: Entity): Promise<void> {
         if ( this.soundPlayer == null) return;
         if(self){
             const me = this;

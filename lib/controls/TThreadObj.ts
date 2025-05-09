@@ -3,16 +3,16 @@
  */
 import { Entity } from "../entity/entity";
 export type TThreadObj = {
-    f: AsyncGenerator<never, void, unknown>,
-    originalF: CallableFunction,
+    f: AsyncGenerator<any, void, any>|null,
+    originalF: CallableFunction|null,
     done: boolean, 
     status: string,
     forceExit: boolean,
-    threadId: string,
-    entityId: string,
+    threadId: string|null,
+    entityId: string|null,
     childObj: TThreadObj|null, 
     parentObj: TThreadObj|null,
-    entity: Entity,
+    entity: Entity|null,
     doubleRunable: boolean,
 
 }

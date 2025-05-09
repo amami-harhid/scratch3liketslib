@@ -3,6 +3,8 @@
  */
 import { Color } from "./color";
 
+declare type RGBColorArray = number[];
+
 declare type RGBObject = {
     r: number,
     g: number,
@@ -118,7 +120,7 @@ export class Cast {
      * @param {any} value Value to convert to RGB color array.
      * @return {Array.<number>} [r,g,b], values between 0-255.
      */
-    static toRgbColorList (value: any) : number[] {
+    static toRgbColorList (value: any) : RGBColorArray {
         const color = Cast.toRgbColorObject(value);
         return [color.r, color.g, color.b];
     }

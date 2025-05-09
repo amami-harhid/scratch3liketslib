@@ -1,12 +1,12 @@
 /**
  * Bubble
  */
-import type { PlayGround } from "../playGround";
+import { PlayGround } from "../playGround";
 import { uid } from "../util/uid";
 import type { IRenderWebGL } from "../render/IRenderWebGL";
 import { Sprite } from "./sprite";
 import { StageLayering } from "./stageLayering";
-import { TScale } from "lib/common/typeCommon";
+import type { TScale } from "../common/typeCommon";
 
 export type BubbleState = {
     drawableID : number,
@@ -47,7 +47,7 @@ export class Bubble{
         return state;
     }
     isBubbleActive(): boolean {
-        if( this.bubbleState.uid == null) {
+        if( this.bubbleState.uid == '') {
             return false;
         }
         return true;
@@ -76,14 +76,14 @@ export class Bubble{
         this._scale.h = _h;    
 }
     async createDrawable() {
-        if(this.renderer && this.bubbleState.drawableID == null ) {
+        if(this.renderer && this.bubbleState.drawableID == -1 ) {
             const bubbleDrawableID = this.renderer.createDrawable( StageLayering.SPRITE_LAYER );
             this.bubbleState.drawableID = bubbleDrawableID;
         }
     }
 
     async createTextSkin() {
-        if(this.renderer && this.bubbleState.skinId == 0 ) {
+        if(this.renderer && this.bubbleState.skinId == -1 ) {
             this.bubbleState.skinId = this.renderer.createTextSkin(
                 this.bubbleState.type, 
                 this.bubbleState.text, 
@@ -103,7 +103,7 @@ export class Bubble{
         await this._renderBubble(_properties);
     }
     updateScale( w, h ) { 
-        if(this.bubbleState.drawableID != null){
+        if(this.bubbleState.drawableID != -1){
             if( w == 0 || h == 0 ) {
                 // ゼロスケールではDrawできないので回避する。
                 return;
@@ -120,13 +120,13 @@ export class Bubble{
     }
     async _renderBubble(_properties={scale:{w:0,h:0}}) {
         if(this.sprite.visible == false || this.bubbleState.text === '') {
-            if( this.bubbleState.uid != null ) {
+            if( this.bubbleState.uid != '' ) {
                 this.destroyBubble();
             }
             return;
         }
         if(this.renderer){
-            if( this.bubbleState.uid == null ) {
+            if( this.bubbleState.uid == '' ) {
                 this.createDrawable();
                 await this.createTextSkin();    
                 if( Object.keys(_properties).length > 0 ) {
@@ -194,10 +194,15 @@ export class Bubble{
         }
     }
     destroyBubble() {
-       if(this.renderer && this.isBubbleActive() && this.bubbleState.drawableID > 0) {
+        if(this.renderer && this.isBubbleActive() && this.bubbleState.drawableID > -1) {
             this.renderer.destroyDrawable( this.bubbleState.drawableID, StageLayering.SPRITE_LAYER);
             this.renderer.destroySkin( this.bubbleState.skinId )
-            this._createBubbleState();    
+            this._createBubbleState();
+
+            // destroy されたので初期化
+            this.bubbleState.drawableID = -1;
+            this.bubbleState.skinId = -1;
+            this.bubbleState.uid = '';
         }
     }
 };

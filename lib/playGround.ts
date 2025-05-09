@@ -26,9 +26,11 @@ export class PlayGround {
         }
         return PlayGround._instance;
     }
+    public main: HTMLElement;
     private _render: Render;
     private _lib: Libs;
     private _nowLoading: string;
+    public runningGame: boolean;
     constructor () {
         this._render = null;
         this._id = this._generateUUID();

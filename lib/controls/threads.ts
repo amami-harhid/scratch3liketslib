@@ -76,8 +76,8 @@ export class Threads {
         }
         return _obj;
     }
-    createObj() {
-        const obj = {
+    createObj():TThreadObj {
+        const obj: TThreadObj = {
             f:null,
             originalF:null,
             done:false, 
@@ -189,7 +189,7 @@ export class Threads {
             }
         }
     }
-    removeObjById(id, clickCounter){
+    removeObjById(id: string, clickCounter?: number){
         if( clickCounter == undefined){
             for(const obj of this.threadArr){
                 if(obj.entity && obj.doubleRunable === false && obj.entityId == id){
